@@ -28,6 +28,7 @@ public class Hardware {
     private static int canBusMin = 1;
     private static int digPinMin = 1;
     private static boolean driveSize;
+    private static boolean extDriveReq;
     private static boolean armSize;
     private static boolean victorSize;
     
@@ -136,10 +137,11 @@ public class Hardware {
         
 
     }
-    public static void driveInit(Vector driveAssign, String mode){
+    public static void driveInit(Vector driveAssign, String mode){ //Modes: fresh, reinit, grow (fresh is anything besides reinit or grow)
         if(assignInit == 0){
             assignment = new Vector(0);
             assignInit++;
+            extDriveReq = false;
         }
         if(driveInit == 0 || mode.equals("reinit")){
         driveJaguars = new Vector(0);
@@ -152,7 +154,7 @@ public class Hardware {
         }
         
         if(assignment.isEmpty() &! mode.equals("reinit")){
-            driveAssign.addElement(new Integer(1)); //specifies type
+            driveAssign.addElement(new Integer(1)); //specifies type, last element of driveAssign in assignment
             assignment.addElement(driveAssign);
         }
         else if(mode.equals("reinit") &! assignment.isEmpty()){
@@ -167,8 +169,7 @@ public class Hardware {
             Hardware.driveInit(driveAssign, "fresh");
         }
         else{
-            
-            //throw driveAssignException;
+
         }
         }
         else if(mode.equals("grow")){           
@@ -307,6 +308,9 @@ public class Hardware {
     }
     public void driveAssign(Vector driveRequest, Vector driveJaguarStatus) throws CANTimeoutException{
         driveSize = true;
+        if(requestBuffer.driveFlag == true){
+            driveRequest = requestBuffer.driveBufferUse();
+        }
         for(int i =0; i<Math.max(driveJaguars.size(), driveRequest.size()); i++){
             if(((Vector) driveRequest.elementAt(i)).size() != ((Vector) driveJaguars.elementAt(i)).size()){
                 driveSize = false;

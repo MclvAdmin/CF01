@@ -5,5 +5,10 @@
             <url>src/mclv/CANJag.java</url>
             <line>20</line>
         </file>
+        <file>
+            <url>src/mclv/Hardware.java</url>
+            <line>139</line>
+            <line>308</line>
+        </file>
     </editor-bookmarks>
 </project-private>
