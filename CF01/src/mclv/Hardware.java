@@ -48,9 +48,15 @@ public class Hardware {
     private static int assignInit = 0;
     
     public static final int driveJagFreq = 1;
+    public static final int driveType = 1;
     public static final int armJagFreq = 1;
+    public static final int armType = 2;
     public static final int lineFreq = 1;
+    public static final int lineType = 3;
     public static final int posFreq = 1;
+    public static final int posType = 4;
+    
+    private static int typeMatch;
     //Sensor vals here
    
     // Make visualization of vectors
@@ -141,11 +147,12 @@ public class Hardware {
         if(assignInit == 0){
             assignment = new Vector(0);
             assignInit++;
-            extDriveReq = false;
         }
-        if(driveInit == 0 || mode.equals("reinit")){
-        driveJaguars = new Vector(0);
-        driveWiring = new Vector(0);
+        if(driveInit == 0){
+            driveJaguars = new Vector(0);
+            driveWiring = new Vector(0);
+        }
+        if(mode.equals("reinit")){
         for(int i = 0; i<driveAssign.size(); i++){
             driveJaguars.addElement(new Vector(0));
             for(int j = 0; j<((Integer) driveAssign.elementAt(i)).intValue(); j++){
@@ -154,7 +161,7 @@ public class Hardware {
         }
         
         if(assignment.isEmpty() &! mode.equals("reinit")){
-            driveAssign.addElement(new Integer(1)); //specifies type, last element of driveAssign in assignment
+            driveAssign.addElement(new Integer(driveType)); //specifies type, last element of driveAssign in assignment
             assignment.addElement(driveAssign);
         }
         else if(mode.equals("reinit") &! assignment.isEmpty()){
@@ -173,21 +180,54 @@ public class Hardware {
         }
         }
         else if(mode.equals("grow")){           
-        for(int i = 0; i<driveAssign.size(); i++){
-            driveJaguars.addElement(new Vector(0));
-            for(int j = 0; j<((Integer) driveAssign.elementAt(i)).intValue(); j++){
-                ((Vector) driveJaguars.lastElement()).addElement(CANJag.init());
+            for(int i = 0; i<driveAssign.size(); i++){
+                driveJaguars.addElement(new Vector(0));
+                for(int j = 0; j<((Integer) driveAssign.elementAt(i)).intValue(); j++){
+                    ((Vector) driveJaguars.lastElement()).addElement(CANJag.init());
+                }
+            }
+            for(int i = 0; i<assignment.size(); i++){
+                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == driveType){
+                        ((Vector) assignment.elementAt(i)).removeElementAt(((Vector) assignment.elementAt(i)).size()-1); //last element
+                        for(int c = 0; c<driveAssign.size(); c++){
+                        ((Vector) assignment.elementAt(i)).addElement(driveAssign.elementAt(c));
+                        }
+                        ((Vector) assignment.elementAt(i)).addElement(new Integer(driveType));
+                    }
             }
         }
-        for(int i = 0; i<assignment.size(); i++){
-                if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == 1){
-                    for(int c = 0; c<driveAssign.size(); c++)
-                    ((Vector) assignment.elementAt(i)).addElement(driveAssign.elementAt(c));
+        else if(mode.equals("fresh")){
+            if(!driveJaguars.isEmpty()){
+                driveInit(driveAssign,"hardware");
+            }
+            if(assignment.isEmpty()){
+                driveAssign.addElement(new Integer(driveType)); //specifies type, last element of driveAssign in assignment
+                assignment.addElement(driveAssign);
+            }
+            else if(!assignment.isEmpty()){
+                driveAssign.addElement(new Integer(driveType));
+                for(int i = 0; i<assignment.size(); i++){
+                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == driveType){
+                        ((Vector) assignment.elementAt(i)).removeAllElements();
+                        ((Vector) assignment.elementAt(i)).addElement(driveAssign);
+                    }
                 }
-        }
+            }
         }
         else{
-            reInit(new Integer(1)); //basically initializes
+            //reInit(driveAssign, new Integer(1)); //basically initializes
+            driveInit(driveAssign, "reinit");
+        }
+        if(mode.equals("hardware")){
+            System.out.println("warning: fresh assignment with risk of existing drive jaguars. Removing current drive jaguars and reinitializing");
+            driveJaguars.removeAllElements();
+            CANJag.reInit();
+            for(int i = 0; i<driveAssign.size(); i++){
+                driveJaguars.addElement(new Vector(0));
+                for(int j = 0; j<((Integer) driveAssign.elementAt(i)).intValue(); j++){
+                    ((Vector) driveJaguars.lastElement()).addElement(CANJag.init());
+                }
+            }
         }
         driveInit++;
     }
@@ -303,9 +343,27 @@ public class Hardware {
         }
         posInit++;
     }
-    public static void reInit(Integer type){
-        
-    }
+    /*
+    public static void reInit(Vector typeAssignVals, Integer type){
+        int typeCheck = 0;
+        if(assignInit == 0){
+          assignment = new Vector(0);
+          assignInit++;            
+        }
+            
+        for(int i = 0; i<assignment.size(); i++){
+            if(((Vector) assignment.elementAt(i)).lastElement().equals(type)){
+                for(int j = 0; j<((Vector) assignment.elementAt(i)).size(); j++){
+                    if(){
+                    for(int k = 0; k<((Vector) ((Vector) assignment.elementAt(i)).elementAt(j)).size(); k++){
+                       
+                    }
+                    }
+                }
+            }
+       }
+
+    }*/
     public void driveAssign(Vector driveRequest, Vector driveJaguarStatus) throws CANTimeoutException{
         driveSize = true;
         if(requestBuffer.driveFlag == true){
@@ -461,6 +519,15 @@ public class Hardware {
 
         
         return hardware;
+    }
+    
+    public static Vector assignmentByType(int type){ //ensure it doesnt reach the second return if first occurs
+        for(int i = 0; i<assignment.size(); i++){
+            if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == type){
+            return (Vector) assignment.elementAt(i);
+            }   
+        }
+        return(new Vector(0));
     }
     
 
