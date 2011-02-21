@@ -110,7 +110,7 @@
             <compilation-unit>
                 <package-root>src</package-root>
                 <classpath mode="boot">${sunspot.bootclasspath}</classpath>
-                <classpath mode="compile">C:\Users\god\Downloads\suanshu-1.0.0\suanshu-1.0.0.jar;C:/Users/god/sunspotfrcsdk/lib/WPILibJ/classes.jar</classpath>
+                <classpath mode="compile">C:\Documents and Settings\1155\sunspotfrcsdk\lib\WPILibJ\classes.jar;C:/Users/god/sunspotfrcsdk/lib/WPILibJ/classes.jar;C:\Users\god\Downloads\suanshu-1.0.0\suanshu-1.0.0.jar</classpath>
                 <built-to>build</built-to>
                 <source-level>1.4</source-level>
             </compilation-unit>

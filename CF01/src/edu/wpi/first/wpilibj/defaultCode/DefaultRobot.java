@@ -145,7 +145,8 @@ public class DefaultRobot extends IterativeRobot{
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             
-            cfHard = new Hardware(driveAssign, emptyVector, emptyVector, lineAssign, emptyVector, bool);
+            Hardware.driveInit(driveAssign, "fresh");
+            //Hardware.lineInit();
             cfIn = new driverInput(controllerAssign);
 
 		// Create a robot using standard right/left robot drive on PWMS 1, 2, 3, and #4
@@ -181,7 +182,16 @@ public class DefaultRobot extends IterativeRobot{
 
 
 
-
+                for(int i = 0; i<Hardware.assignment.size(); i++){
+                    System.out.println(((Vector) Hardware.assignment.elementAt(i)).lastElement());
+                    System.out.print(":");
+                    for(int j = 0; j<((Vector) Hardware.assignment.elementAt(i)).size(); j++){
+                        /*for(int h = 0; h<((Vector) ((Vector) Hardware.assignment.elementAt(i)).elementAt(j)).size(); h++){
+                            System.out.println(((Integer) ((Vector) ((Vector) Hardware.assignment.elementAt(i)).elementAt(j)).elementAt(h)).intValue());
+                         }*/
+                        System.out.println(((Integer) ((Vector) Hardware.assignment.elementAt(i)).elementAt(j)).intValue());
+                    }
+                }
 		System.out.println("Roman Constructor Completed\n");
 	}
 
