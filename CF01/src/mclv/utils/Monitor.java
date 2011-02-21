@@ -3,9 +3,10 @@
  * and open the template in the editor.
  */
 
-package mclv;
+package mclv.utils;
 //import mclv.*;
 import java.util.*;
+import mclv.Hardware;
 //import suanshu.*;
 
 

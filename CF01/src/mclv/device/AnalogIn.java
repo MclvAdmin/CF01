@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package mclv;
+package mclv.device;
 import java.util.*;
 import edu.wpi.first.wpilibj.AnalogChannel;
 /**

@@ -3,12 +3,12 @@
  * and open the template in the editor.
  */
 
-package mclv;
+package mclv.logomotion;
 
 /**
  *
  * @author god
  */
-public class ConstantManager {
+public class Position {
 
 }

@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-package mclv;
+package mclv.device;
 import edu.wpi.first.wpilibj.CANJaguar;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import java.util.*;

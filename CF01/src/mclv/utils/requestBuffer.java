@@ -1,4 +1,4 @@
-package mclv;
+package mclv.utils;
 import java.util.*;
 /**
  *
@@ -14,9 +14,7 @@ public static boolean armFlag = false;
 public static boolean victorFlag = false;
 public static boolean combFlag = false;
 private static int addRun = 0;
-    public requestBuffer(){ //Requests correspond to an assign method in hardware
-    
-    }
+
     public static void init(){
         driveBuffer = new Vector(0);
         armBuffer = new Vector(0);
@@ -27,12 +25,20 @@ private static int addRun = 0;
         if(addRun == 0){
             init();
         }
-        switch(((Integer) outputRequest.lastElement()).intValue()) {
-            case 1: driveAdd(outputRequest);
-            case 2: armAdd(outputRequest);
-            case 3: victorAdd(outputRequest);
-            default: System.out.print("Buffer cannot add, invalid type");
+        
+        if(((Integer) outputRequest.lastElement()).intValue() == ConstantManager.driveType){
+            driveAdd(outputRequest);
         }
+        else if(((Integer) outputRequest.lastElement()).intValue() == ConstantManager.armType){
+            armAdd(outputRequest);
+        }
+        else if(((Integer) outputRequest.lastElement()).intValue() == ConstantManager.victorType){
+            victorAdd(outputRequest);
+        }
+        else{
+            System.out.print("Buffer cannot add, invalid type");
+        }
+        
         amalgamate();
         addRun++;
     }

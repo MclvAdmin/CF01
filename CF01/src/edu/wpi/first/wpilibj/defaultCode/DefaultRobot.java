@@ -8,6 +8,7 @@
 package edu.wpi.first.wpilibj.defaultCode;
 
 
+import mclv.logomotion.Drive;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -108,7 +109,7 @@ public class DefaultRobot extends IterativeRobot{
         Vector lineAssign;
         boolean bool;
 
-        drive cfDrive;
+        Drive cfDrive;
         driverInput cfIn;
         Vector positionReq;
         Vector driveJagStatus;
@@ -124,7 +125,7 @@ public class DefaultRobot extends IterativeRobot{
      */
     public DefaultRobot() throws CANTimeoutException {
         System.out.println("Roman Constructor Started\n");
-         cfDrive = new drive(new Vector());
+         cfDrive = new Drive(new Vector());
          driveAssign = new Vector();
          controllerAssign = new Vector();
          posReq = new Vector();

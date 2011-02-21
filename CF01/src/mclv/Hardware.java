@@ -4,6 +4,8 @@
  */
 
 package mclv;
+import mclv.device.*;
+import mclv.utils.*;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import java.util.*;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -25,6 +27,7 @@ public class Hardware {
     private static Vector victors;
     private static Vector linePs;
     private static Vector posSense;
+    private static Vector hardwareHistoric;
     private static int canBusMin = 1;
     private static int digPinMin = 1;
     private static boolean driveSize;
@@ -45,106 +48,112 @@ public class Hardware {
     private static int victorInit = 0;
     private static int lineInit = 0;
     private static int posInit = 0;
+    private static int init = 0;
     private static int assignInit = 0;
     
-    public static final int driveJagFreq = 1;
-    public static final int driveType = 1;
-    public static final int armJagFreq = 1;
-    public static final int armType = 2;
-    public static final int victorFreq = 0; // denotes no checks in monitor (nothing to check) wish i used null :P
-    public static final int victorType = 3;
-    public static final int lineFreq = 1;
-    public static final int lineType = 4;
-    public static final int posFreq = 1;
-    public static final int posType = 5;
+    public static final int driveJagFreq = ConstantManager.driveJagFreq; //for now, in future will check straight from constant manager
+    public static final int armJagFreq = ConstantManager.armJagFreq;
+    public static final int victorFreq = ConstantManager.victorFreq;
+    public static final int lineFreq = ConstantManager.lineFreq;
+    public static final int posFreq = ConstantManager.posFreq;
+ 
+    public static final int driveType = ConstantManager.driveType;
+    public static final int armType = ConstantManager.armType;
+    public static final int victorType = ConstantManager.victorType;
+    public static final int lineType = ConstantManager.lineType;
+    public static final int posType = ConstantManager.posType;
     
     private static int typeMatch;
     //Sensor vals here
    
     // Make visualization of vectors
     
-    public Hardware(Vector driveJagAssign, Vector armJagAssign, Vector victorAssign, Vector lineAssign, Vector posAssign, boolean camera) throws CANTimeoutException{
-        driveJaguars = new Vector(0);
-        driveWiring = new Vector(0);
-        armJaguars = new Vector(0);
-        armWiring = new Vector(0);
-        victors = new Vector(0);
-        victorWiring = new Vector(0);
-        posSense = new Vector(0);
-        posWiring = new Vector(0);
-        linePs = new Vector(0);
-        lineWiring = new Vector(0);
+    public Hardware(){}
+    
+    public static void init(Vector hardwareAssign, String mode){
+            assignment = new Vector(ConstantManager.maxTypes() - driveType); // yup; drivetype is the min value
+            assignInit++;
+        if(init == 0){
+            hardware = new Vector(0);
+            hardwareHistoric = new Vector(0);
+            hardwareHistoric.addElement(new Integer(init));
+        }
         
-        /*if(driveJagAssign.size()>0){
-            for(int i =0; i<driveJagAssign.size(); i++){
-                driveJaguars.addElement(new Vector());
-                driveWiring.addElement(new Vector());
-                for(int c =0; c<((Integer) driveJagAssign.elementAt(i)).intValue(); c++,canBusMin++){
-                    ((Vector) driveJaguars.elementAt(i)).addElement(new CANJaguar(c + canBusMin));
-                    ((Vector) driveWiring.elementAt(i)).addElement(new Integer(c + canBusMin));
-                }
-            //canBusMin = canBusMin + ((Integer) driveJagAssign.elementAt(i)).intValue();
-            }//Done initializing drive system jaguars, in unique system for special temp management and symmetrical shutdown/control processes
-        }*/
-        if(armJagAssign.size()>0){    
-            for(int i =0; i<armJagAssign.size(); i++){
-                armJaguars.addElement(new Vector(0));
-                armWiring.addElement(new Vector(0));
-                for(int c =0; c<((Integer) armJagAssign.elementAt(i)).intValue(); c++,canBusMin++){
-                    ((Vector) armJaguars.elementAt(i)).addElement(new CANJaguar(c + canBusMin));
-                    ((Vector) armWiring.elementAt(i)).addElement(new Integer(c + canBusMin));
-                }
-            //canBusMin = canBusMin + ((Integer) armJagAssign.elementAt(i)).intValue();
-            }//Done initializing drive system jaguars, in unique system for special temp management and symmetrical shutdown/control processes
-        }
-        if(victorAssign.size()>0){    
-            for(int i =0; i<victorAssign.size(); i++){
-                victors.addElement(new Vector(0));
-                victorWiring.addElement(new Vector(0));
-                for(int c =0; c<((Integer) victorAssign.elementAt(i)).intValue(); c++,digPinMin++){
-                    ((Vector) victors.elementAt(i)).addElement(new Victor(c + digPinMin));
-                    ((Vector) victorWiring.elementAt(i)).addElement(new Integer(c + digPinMin));
-                }
-            //digPinMin = digPinMin + ((Integer) victorAssign.elementAt(i)).intValue();
+        if(mode.equals("fresh")){
+            hardware = new Vector(hardwareAssign.size()); //may interact poorly with other threads, lock
+            if(mode.equals("reinit") && init > ((Integer) hardwareHistoric.lastElement()).intValue() && init != 0){ //Make the assings the historic values. works for last assigned not all assigned
+                hardwareAssign = hardwareHistoric;
+                hardwareAssign.removeElementAt(hardwareAssign.size() -1);
             }
-        }
-        if(lineAssign.size()>0){
-            for(int i =0; i<lineAssign.size(); i++){
-                linePs.addElement(new Vector(0));
-                lineWiring.addElement(new Vector(0));
-                for(int c =0; c<((Integer) lineAssign.elementAt(i)).intValue(); c++,digPinMin++){
-                    ((Vector) linePs.elementAt(i)).addElement(new DigitalInput(c + digPinMin));
-                    ((Vector) lineWiring.elementAt(i)).addElement(new Integer(c + digPinMin));
-                } 
-            //digPinMin = digPinMin + ((Integer) lineAssign.elementAt(i)).intValue();
+            for(int i = 0; i<hardwareAssign.size(); i++){
+                hardware.setElementAt(new Vector(0), i);
+                for(int j = 0; j<((Vector) hardwareAssign.elementAt(i)).size() -1; j++){//-1 for last tag value
+                    for(int h = 0; h<((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue(); h++)
+                        if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == driveType){
+                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.driveType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
+                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.armType));    
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
+                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.victorType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == lineType){
+                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.lineType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == posType){
+                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.posType));
+                        }
+                }
             }
-        }
-        if(posAssign.size()>0){
-            for(int i =0; i<posAssign.size(); i++){
-                posSense.addElement(new Vector(0));
-                posWiring.addElement(new Vector(0));
-                for(int c =0; c<((Vector) posAssign.elementAt(i)).size(); c++,digPinMin++){
-                    if(i == 1){
-                    ((Vector) posSense.elementAt(i)).addElement(new DigitalInput(c + digPinMin));
-                    ((Vector) posWiring.elementAt(i)).addElement(new Integer(c + digPinMin)); 
+
+                hardwareAssign.addElement(new Integer(init));
+                hardwareHistoric = hardwareAssign;
+                hardwareAssign.removeElementAt(hardwareAssign.size() -1);
+
+            }
+          else if(mode.equals("reinit")){
+                hardware = new Vector(hardwareAssign.size()); //may interact poorly with other threads, lock
+                if(init > ((Integer) hardwareHistoric.lastElement()).intValue() && init != 0){ //Make the assings the historic values. works for last assigned not all assigned
+                    hardwareAssign = hardwareHistoric;
+                    hardwareAssign.removeElementAt(hardwareAssign.size() -1);
+                }
+                else{
+                    System.out.println("attempting to reinit hardware illegally");
+                }
+                //Reinit devices
+                CANJag.reInit();
+                DigIn.reInit();
+                AnalogIn.reInit();
+                VictorMclv.reInit();
+                for(int i = 0; i<hardwareAssign.size(); i++){
+                    hardware.setElementAt(new Vector(0), i);
+                    for(int j = 0; j<((Vector) hardwareAssign.elementAt(i)).size() -1; j++){//-1 for last tag value
+                        for(int h = 0; h<((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue(); h++)
+                        if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == driveType){
+                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.driveType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
+                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.armType));    
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
+                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.victorType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == lineType){
+                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.lineType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == posType){
+                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.posType));
+                        }
                     }
                 }
-            //digPinMin = digPinMin + ((Integer) lineAssign.elementAt(i)).intValue();
             }
+        for(int i = 0; i<assignment.size(); i++){
+            
         }
-        //ADD SENSOR HANDLING
-        
-        //Make error codes!
-        
-        /*
-        this.driveWiring = driveWiring;
-        this.armWiring = armWiring;
-        this.victorWiring = victorWiring
-         */
- 
-        
-
+        init++;
     }
+
     public static void driveInit(Vector driveAssign, String mode){ //Modes: fresh, reinit, grow (fresh is anything besides reinit or grow)
         if(assignInit == 0){
             assignment = new Vector(0);
@@ -334,7 +343,7 @@ public class Hardware {
             for(int i = 0; i<victorAssign.size(); i++){
                 victors.addElement(new Vector(0));
                 for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.elementAt(i)).addElement(CANJag.init());
+                    ((Vector) victors.elementAt(i)).addElement(VictorMclv.init());
                 }
             }
         
@@ -361,7 +370,7 @@ public class Hardware {
             for(int i = 0; i<victorAssign.size(); i++){
                 victors.addElement(new Vector(0));
                 for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.lastElement()).addElement(CANJag.init());
+                    ((Vector) victors.lastElement()).addElement(VictorMclv.init());
                 }
             }
             for(int i = 0; i<assignment.size(); i++){
@@ -399,11 +408,11 @@ public class Hardware {
         if(mode.equals("hardware")){
             System.out.println("warning: fresh assignment with risk of existing victor jaguars. Removing current victor jaguars and reinitializing");
             victors.removeAllElements();
-            CANJag.reInit();
+            VictorMclv.reInit();
             for(int i = 0; i<victorAssign.size(); i++){
                 victors.addElement(new Vector(0));
                 for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.lastElement()).addElement(CANJag.init());
+                    ((Vector) victors.lastElement()).addElement(VictorMclv.init());
                 }
             }
         }
@@ -644,7 +653,7 @@ public class Hardware {
             }
         }
     }
-    public static Vector hardwareReport(){
+    /*public static Vector hardwareReport(){
     for(int i = 0; i<3; i++){ // 0=drive 1=arm 2=sensors
         hardware.addElement(new Vector());
     }
@@ -666,35 +675,17 @@ public class Hardware {
             ((Vector) hardware.elementAt(1)).addElement(new Integer(armJagFreq)); //arm jaguar freq
         }    
     }
-    /*for(int i = 0; i<victors.size(); i++){                add sensor loop
+    for(int i = 0; i<victors.size(); i++){                add sensor loop
         ((Vector) hardware.elementAt(0)).addElement(new Integer(((Vector) victors.elementAt(i)).size()));
     }      
-    */
+    
 
         
         return hardware;
     }
-    
-    public static Vector assignmentByType(int type){ //ensure it doesnt reach the second return if first occurs
-        for(int i = 0; i<assignment.size(); i++){
-            if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == type){
-            return (Vector) assignment.elementAt(i);
-            }   
-        }
-        return(new Vector(0));
-    }
-    
-
-    /*
-    public Vector driveWiring(){
-        return driveWiring;
-    }
-    public Vector armWiring(){
-        return armWiring;
-    }
-    public Vector victorWiring(){
-        return victorWiring;
-    }
     */
+    public static Vector assignmentByType(int type){ //ensure it doesnt reach the second return if first occurs
+        return(((Vector) assignment.elementAt(type - ConstantManager.minTypes())));
+    }
     
 }

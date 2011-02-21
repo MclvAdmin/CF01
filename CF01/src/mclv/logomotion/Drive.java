@@ -3,16 +3,16 @@
  * and open the template in the editor.
  */
 
-package mclv;
+package mclv.logomotion;
 import java.util.*;
 /**
  *
  * @author god
  */
-public class drive { //Consider static methods
+public class Drive { //Consider static methods
     private Vector driveSet;
     private Vector driveOut;
-    public drive(Vector driveSetConfig){
+    public Drive(Vector driveSetConfig){
         driveSet = driveSetConfig;    
     }
   
