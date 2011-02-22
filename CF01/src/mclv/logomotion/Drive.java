@@ -9,17 +9,18 @@ import java.util.*;
  *
  * @author god
  */
-public class Drive { //Consider static methods
-    private Vector driveSet;
-    private Vector driveOut;
-    public Drive(Vector driveSetConfig){
+public class drive { //Consider static methods
+    private static Vector driveSet;
+    private static Vector driveOut;
+    public drive(Vector driveSetConfig){
         driveSet = driveSetConfig;    
     }
   
-    public Vector request(Vector positionReq, Vector controllerDrive){ //Makes 'driveAssign' for hardware object ..... positionReq includes data as to automation of drive from sensor class
+    public static Vector request(Vector positionReq, Vector controllerDrive){ //Makes 'driveAssign' for hardware object ..... positionReq includes data as to automation of drive from sensor class
         driveSet = new Vector(0);
         driveOut = new Vector(0);
-        if(((Integer)positionReq.elementAt(positionReq.size()-1)).intValue() ==0 && ((Boolean) controllerDrive.elementAt(0)).booleanValue() != true){
+        System.out.println((((Boolean) controllerDrive.elementAt(0)).booleanValue()));
+        if( ((((Integer) positionReq.lastElement()).intValue())==0) && ((((Boolean) controllerDrive.elementAt(0)).booleanValue()) != true)){
             /*THAT looks fucking complicated but it's the first value of the last element in the provided request from the 
              * position object which tells drive whether it's taking driver input.
              * It also checks to see if button/sequence has been pressed that would disable automatic movement
@@ -32,17 +33,21 @@ public class Drive { //Consider static methods
 
                 }
             }*/
-        for(int i = 0; i< positionReq.size()-1; i++){
-            for(int c = 0; driveOut.size()< positionReq.size()-1; c++){
+        for(int i = 0; i< positionReq.size(); i++){
+            System.out.println("posReq index value:");
+            System.out.print(i);
+                    
+            for(int c = 0; driveOut.size()< positionReq.size(); c++){
                 driveOut.addElement(new Vector());
                 ((Vector) driveOut.elementAt(c)).addElement(new Double(0));
             }
-            for(int j = 0; j<((Vector) positionReq.elementAt(i)).size(); j++){
+            for(int j = 0; j<((Integer) positionReq.elementAt(i)).intValue(); j++){
                 if(i == 0){ //EXPAND TO MORE SYSTEMS!
-                ((Double) ((Vector)  driveOut.elementAt(i)).elementAt(j)).equals(((Double) controllerDrive.elementAt(1)));
+                ((Vector)  driveOut.elementAt(i)).addElement(controllerDrive.elementAt(1));
                 }
                 else{
-                ((Double) ((Vector)  driveOut.elementAt(i)).elementAt(j)).equals(((Double) controllerDrive.elementAt(2)));
+                //((Double) ((Vector)  driveOut.elementAt(i)).elementAt(j)).equals(((Double) controllerDrive.elementAt(2)));
+                ((Vector)  driveOut.elementAt(i)).addElement(controllerDrive.elementAt(2));
                 }
             }
         }

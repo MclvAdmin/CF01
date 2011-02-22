@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
-    <data xmlns="http://www.netbeans.org/ns/profiler/1" version="0.4"/>
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
             <url>src/mclv/Hardware.java</url>
-            <line>510</line>
-        </file>
-        <file>
-            <url>src/mclv/CANJag.java</url>
-            <line>20</line>
+            <line>534</line>
         </file>
     </editor-bookmarks>
 </project-private>

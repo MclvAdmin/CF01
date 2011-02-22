@@ -8,7 +8,8 @@
 package edu.wpi.first.wpilibj.defaultCode;
 
 
-import mclv.logomotion.Drive;
+import mclv.logomotion.drive;
+import mclv.utils.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -103,14 +104,14 @@ public class DefaultRobot extends IterativeRobot{
 
         Vector driveAssign;
 
-        Hardware cfHard;
+        //Hardware cfHard;
         Vector emptyVector;
         Vector controllerAssign;
         Vector lineAssign;
         boolean bool;
 
-        Drive cfDrive;
-        driverInput cfIn;
+        //Drive cfDrive;
+        //driverInput cfIn;
         Vector positionReq;
         Vector driveJagStatus;
         Vector posReq;
@@ -125,30 +126,42 @@ public class DefaultRobot extends IterativeRobot{
      */
     public DefaultRobot() throws CANTimeoutException {
         System.out.println("Roman Constructor Started\n");
-         cfDrive = new Drive(new Vector());
-         driveAssign = new Vector();
-         controllerAssign = new Vector();
-         posReq = new Vector();
-         driveJagStatus = new Vector();
-         emptyVector = new Vector();
-         lineAssign = new Vector();
+         //cfDrive = new Drive(new Vector());
+         driveAssign = new Vector(0);
+         controllerAssign = new Vector(0);
+         posReq = new Vector(0);
+         driveJagStatus = new Vector(0);
+         emptyVector = new Vector(0);
+         lineAssign = new Vector(0);
          bool = false;
 
             driveAssign.addElement(new Integer(2));
             driveAssign.addElement(new Integer(2));
             controllerAssign.addElement(new Vector());
-            posReq.addElement(new Vector(2));
-            posReq.addElement(new Vector(2));
+            posReq.addElement(new Integer(2));
+            posReq.addElement(new Integer(2));
+            //posReq.addElement(new Vector(2));
+            //posReq.addElement(new Vector(2));
             posReq.addElement(new Integer(0));
+            //((Vector) posReq.elementAt(0)).addElement(new Integer(0));
+            //((Vector) posReq.elementAt(1)).addElement(new Integer(0));
+            //posReq.addElement(new Integer(0));
             lineAssign.addElement(new Integer(3));
-            driveJagStatus.addElement(new Vector(2));
+            driveJagStatus.addElement(new Vector(0));
+            driveJagStatus.addElement(new Vector(0));
+            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(0));
+            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(0));
+            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(0));
+            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(0));
             driveJagStatus.addElement(new Vector(2));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
+            Vector hardwareAssign = new Vector(0);
+            hardwareAssign.addElement(driveAssign);
             
-            Hardware.driveInit(driveAssign, "fresh");
+            Hardware.init(hardwareAssign, "fresh");
             //Hardware.lineInit();
-            cfIn = new driverInput(controllerAssign);
+            driverInput.init(controllerAssign);
 
 		// Create a robot using standard right/left robot drive on PWMS 1, 2, 3, and #4
 		//m_robotDrive = new RobotDrive(1, 3, 2, 4);
@@ -316,11 +329,13 @@ public class DefaultRobot extends IterativeRobot{
                 m_driveMode = TANK_DRIVE;
             }
         }*/ //start roman code:
-        try{
-        cfHard.driveAssign(cfDrive.request(posReq, cfIn.drive()), driveJagStatus);
+        try{ //best to reference other mclv 'main'
+        Hardware.driveAssign(drive.request(posReq, driverInput.drive()), driveJagStatus);
         }
         catch (CANTimeoutException canFail){
-            System.out.println("Can timeout");
+            System.out.println("Can timeout, switching to pwm");
+            ConstantManager.pwm = true;
+            Hardware.init(new Vector(0), "reinit"); //now THAT is the shit.. i hope it works. This will reinitialize a
         }
 
     }

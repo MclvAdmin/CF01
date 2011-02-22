@@ -14,13 +14,16 @@ import edu.wpi.first.wpilibj.Joystick;
  * Be able to provide other objects with a simple yes/no for relevant q's...
  */
 public class driverInput {
-    private Vector controllers;
-    private int nextPort = 1; //The port min initially... Research Cypress module for other input devices
-    private Vector driveVals;
+    private static Vector controllers;
+    private static int nextPort = 1; //The port min initially... Research Cypress module for other input devices
+    private static Vector driveVals;
+    private static Vector armVals;
+    private static Integer testInt;
     
-    public driverInput(Vector controllerConfig){
-        controllers = new Vector(0);
-        driveVals = new Vector(3);
+    public static void init(Vector controllerConfig){ //make static asap
+        testInt = new Integer(1);
+        controllers = new Vector(0); //Configure controller type vals in constant manager
+        
          for(int i = 0; i<controllerConfig.size(); i++){
             controllers.addElement(new Vector());
             for(int c = 0; c<((Vector) controllerConfig.elementAt(i)).size(); c++){
@@ -35,10 +38,21 @@ public class driverInput {
         }
     }
 
-    public Vector drive(){
-        ((Boolean) driveVals.elementAt(0)).equals(new Boolean(false)); //Expand for more values!
-        ((Double) driveVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getY()));
-        ((Double) driveVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getY()));
+    public static Vector drive(){ //Reconfig to run from single driverInput call
+        driveVals = new Vector(0);
+        driveVals.addElement(new Boolean(true)); //Expand for more values! FALSE
+        driveVals.addElement(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getY()));
+        driveVals.addElement(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getY()));
         return driveVals;
+    }
+    public static Vector arm(){
+        armVals = new Vector(3);
+        ((Boolean) armVals.elementAt(0)).equals(new Boolean(false)); //Expand for more values!
+        ((Double) armVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getX()));
+        ((Double) armVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getX()));
+        return armVals;
+    }
+    public static Vector info(){ //create info generator
+        return new Vector(0);
     }
 }

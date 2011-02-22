@@ -14,7 +14,7 @@ import mclv.Hardware;
  *
  * @author god
  */
-public class Monitor {
+public class Monitor {/*
 public final int freq = 1; //Default frequency value
 public Vector hardware;
     public Monitor(){ //Should be initialized from hardware class
@@ -36,7 +36,7 @@ public Vector hardware;
             }
         }
         
-    }
+    }*/
     public void update(){
         //add analysis here
     }

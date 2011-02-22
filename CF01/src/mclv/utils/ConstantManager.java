@@ -22,40 +22,54 @@ public class ConstantManager {
     public static int victorFreq = 0; // denotes no checks in monitor (nothing to check) wish i used null :P
     public static int lineFreq = 1;
     public static int posFreq = 1;
-    public static boolean pwm = true;
+    public static boolean pwm = false; //testing this value
     
     public static double straight = 0.5;
     public static double hardTurn = 0.5;
     public static double slightTurn = 0.25;
+    public static double failedJagAssign = 0;
     
-    private static Vector maxList;
+    public static double jointCoeff = 0.1;
+    public static double wristCoeff = 0.1;
+    
+    private static Vector typeList;
     private static int calc;
         public ConstantManager(){
             
         }
         public static int maxTypes(){
-            maxList = new Vector(0);
-            maxList.addElement(new Integer(driveType));
-            maxList.addElement(new Integer(armType));
-            maxList.addElement(new Integer(victorType));
-            maxList.addElement(new Integer(lineType));
-            maxList.addElement(new Integer(posType));
+            typeList = new Vector(0);
+            typeList.addElement(new Integer(driveType));
+            typeList.addElement(new Integer(armType));
+            typeList.addElement(new Integer(victorType));
+            typeList.addElement(new Integer(lineType));
+            typeList.addElement(new Integer(posType));
             
-            for(int i = 0; i<maxList.size() -1; i++){
-                calc = Math.max(((Integer) maxList.elementAt(i)).intValue(), ((Integer) maxList.elementAt(i + 1)).intValue());
+            for(int i = 0; i<typeList.size()-1; i++){
+                if(i==0){
+                calc = Math.max(((Integer) typeList.elementAt(i)).intValue(), ((Integer) typeList.elementAt(i + 1)).intValue());
+                }
+                else{
+                calc = Math.max(calc, ((Integer) typeList.elementAt(i + 1)).intValue());
+                }
             }
             return calc;
         }
         public static int minTypes(){
-            maxList = new Vector(0);
-            maxList.addElement(new Integer(driveType));
-            maxList.addElement(new Integer(armType));
-            maxList.addElement(new Integer(victorType));
-            maxList.addElement(new Integer(lineType));
-            maxList.addElement(new Integer(posType));
+            typeList = new Vector(0);
+            typeList.addElement(new Integer(driveType));
+            typeList.addElement(new Integer(armType));
+            typeList.addElement(new Integer(victorType));
+            typeList.addElement(new Integer(lineType));
+            typeList.addElement(new Integer(posType));
             
-            for(int i = 0; i<maxList.size() -1; i++){
-                calc = Math.min(((Integer) maxList.elementAt(i)).intValue(), ((Integer) maxList.elementAt(i + 1)).intValue());
+            for(int i = 0; i<typeList.size()-1; i++){
+                if(i==0){
+                calc = Math.min(((Integer) typeList.elementAt(i)).intValue(), ((Integer) typeList.elementAt(i + 1)).intValue());
+                }
+                else{
+                calc = Math.min(calc, ((Integer) typeList.elementAt(i + 1)).intValue());
+                }
             }
             return calc;
         }

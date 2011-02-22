@@ -80,29 +80,34 @@ public class Hardware {
         }
         
         if(mode.equals("fresh")){
-            hardware = new Vector(hardwareAssign.size()); //may interact poorly with other threads, lock
-            if(mode.equals("reinit") && init > ((Integer) hardwareHistoric.lastElement()).intValue() && init != 0){ //Make the assings the historic values. works for last assigned not all assigned
-                hardwareAssign = hardwareHistoric;
-                hardwareAssign.removeElementAt(hardwareAssign.size() -1);
+            hardware = new Vector(); //may interact poorly with other threads, lock
+            System.out.println("maxTypes");
+            System.out.println(ConstantManager.maxTypes());
+            System.out.println("minTypes");
+            System.out.println(ConstantManager.minTypes());
+            for(int i = 0; i<(ConstantManager.maxTypes() - ConstantManager.minTypes()); i++){
+                hardware.addElement(new Vector(0));
+                ((Vector) hardware.elementAt(i)).addElement(new Vector(0));
             }
+            
             for(int i = 0; i<hardwareAssign.size(); i++){
-                hardware.setElementAt(new Vector(0), i);
+                ((Vector) hardware.elementAt(i)).addElement(new Vector(0));
                 for(int j = 0; j<((Vector) hardwareAssign.elementAt(i)).size() -1; j++){//-1 for last tag value
                     for(int h = 0; h<((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue(); h++)
                         if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == driveType){
-                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.driveType));
+                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.driveType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
-                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.armType));    
+                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.armType));    
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
-                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.victorType));
+                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.victorType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == lineType){
-                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.lineType));
+                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.lineType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == posType){
-                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.posType));
+                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.posType));
                         }
                 }
             }
@@ -113,7 +118,7 @@ public class Hardware {
 
             }
           else if(mode.equals("reinit")){
-                hardware = new Vector(hardwareAssign.size()); //may interact poorly with other threads, lock
+                hardware = new Vector(ConstantManager.maxTypes()); //may interact poorly with other threads, lock
                 if(init > ((Integer) hardwareHistoric.lastElement()).intValue() && init != 0){ //Make the assings the historic values. works for last assigned not all assigned
                     hardwareAssign = hardwareHistoric;
                     hardwareAssign.removeElementAt(hardwareAssign.size() -1);
@@ -131,19 +136,19 @@ public class Hardware {
                     for(int j = 0; j<((Vector) hardwareAssign.elementAt(i)).size() -1; j++){//-1 for last tag value
                         for(int h = 0; h<((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue(); h++)
                         if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == driveType){
-                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.driveType));
+                            ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.driveType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
-                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.armType));    
+                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.armType));    
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
-                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.victorType));
+                            ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.victorType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == lineType){
-                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.lineType));
+                            ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.lineType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == posType){
-                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.select(ConstantManager.posType));
+                            ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.posType));
                         }
                     }
                 }
@@ -527,35 +532,44 @@ public class Hardware {
        }
 
     }*/
-    public void driveAssign(Vector driveRequest, Vector driveJaguarStatus) throws CANTimeoutException{
+    public static void driveAssign(Vector driveRequest, Vector driveJaguarStatus) throws CANTimeoutException{
         driveSize = true;
         if(requestBuffer.driveFlag == true){
             driveRequest = requestBuffer.driveBufferUse();
         }
-        for(int i =0; i<Math.max(driveJaguars.size(), driveRequest.size()); i++){
-            if(((Vector) driveRequest.elementAt(i)).size() != ((Vector) driveJaguars.elementAt(i)).size()){
+        /*
+        for(int i =0; i<Math.max(((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size(), driveRequest.size()); i++){
+            System.out.println("driveAssign index:");
+            System.out.println(i);
+            if(((Vector) driveRequest.elementAt(i)).size() != ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(i)).size()){
                 driveSize = false;
             }
-            if(driveRequest.size()!=driveJaguars.size()){
+            if(driveRequest.size()!=((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size()){
                 driveSize = false;
             }
-        }
+        }*/ //DEBUG!
         if(driveSize = false){
             System.out.println("Hardware cannot assign drive value; request inconsistent with initialized jaguars");
         }
         else{
-            for(int i=0; i<driveJaguars.size(); i++){
-                for(int c=0; c<((Vector) driveJaguars.elementAt(i)).size(); c++){
+            for(int i=0; i<((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size(); i++){
+                for(int c=0; c<((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(i)).size(); c++){
                     if(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)) != null && ((Integer)((Vector) driveJaguarStatus.elementAt(i)).elementAt(c)).intValue() != 0){
-                       ((CANJaguar) ((Vector) driveJaguars.elementAt(i)).elementAt(c)).setX(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
+                       //((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(i)).elementAt(c)).elementAt(0)).assign(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
+                       decideAssign(i, c,((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
+                       System.out.println("assigning");
+                       System.out.println(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
                     }
                     else if(((Integer)((Vector) driveJaguarStatus.elementAt(i)).elementAt(c)).intValue() != 0){ //If the value is null, leave jaguars alone
-                        
+                        System.out.println("jaguars left alone");
                     }
                     else{ //If it is unsafe to assign (STATUS = 0)
-                        for(int j=0; j<driveJaguars.size(); j++){
-                            if(c <((Vector) driveJaguars.elementAt(j)).size()){ //Make sure this jaguar exists for all systems before assigning a value
-                            ((CANJaguar) ((Vector) driveJaguars.elementAt(j)).elementAt(c)).setX(0); //I assume this lets motor spin freely, will probably bring entire system down via overheat
+                        for(int j=0; j<((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size(); j++){
+                            if(c <((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(j)).size()){ //Make sure this jaguar exists for all systems before assigning a value
+                            //((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(j)).elementAt(c)).elementAt(0)).assign(0); //I assume this lets motor spin freely, will probably bring entire system down via overheat
+                            decideAssign(j, c, ConstantManager.failedJagAssign);
+                            System.out.println("assigning to failed drive jaguar and counterparts:");
+                            System.out.println(ConstantManager.failedJagAssign);
                             }
                         }
                         
@@ -573,7 +587,7 @@ public class Hardware {
         //else if()        
         //else if(driveRequest.elementAt(i))
     }
-    public void armAssign(Vector armRequest, Vector armJaguarStatus) throws CANTimeoutException{
+    public static void armAssign(Vector armRequest, Vector armJaguarStatus) throws CANTimeoutException{
        armSize = true;
         for(int i =0; i<Math.max(armJaguars.size(), armRequest.size()); i++){
             if(((Vector) armRequest.elementAt(i)).size() != ((Vector) armJaguars.elementAt(i)).size()){
@@ -686,6 +700,14 @@ public class Hardware {
     */
     public static Vector assignmentByType(int type){ //ensure it doesnt reach the second return if first occurs
         return(((Vector) assignment.elementAt(type - ConstantManager.minTypes())));
+    }
+    private static void decideAssign(int system, int memberId, double output){ //decide which type to cast the jaguar as; pwm or CANJag?
+        if(ConstantManager.pwm){ //if pwm is true
+            ((Pwm) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+        }
+        else{ //assign to the proper jag
+            ((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+        }
     }
     
 }
