@@ -22,7 +22,7 @@ public class ConstantManager {
     public static int victorFreq = 0; // denotes no checks in monitor (nothing to check) wish i used null :P
     public static int lineFreq = 1;
     public static int posFreq = 1;
-    public static boolean pwm = false; //testing this value
+    public static boolean pwm = true; //testing this value
     
     public static double straight = 0.5;
     public static double hardTurn = 0.5;
@@ -31,6 +31,8 @@ public class ConstantManager {
     
     public static double jointCoeff = 0.1;
     public static double wristCoeff = 0.1;
+    
+    public static boolean joyInverted = true;
     
     private static Vector typeList;
     private static int calc;

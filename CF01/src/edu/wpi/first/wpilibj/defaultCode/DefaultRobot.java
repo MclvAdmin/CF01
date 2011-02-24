@@ -8,7 +8,7 @@
 package edu.wpi.first.wpilibj.defaultCode;
 
 
-import mclv.logomotion.drive;
+import mclv.logomotion.Drive;
 import mclv.utils.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
@@ -75,7 +75,7 @@ import java.util.*;
  */
 public class DefaultRobot extends IterativeRobot{
 	// Declare variable for the robot drive system
-	RobotDrive m_robotDrive;		// robot will use PWM 1-4 for drive motors
+	//RobotDrive m_robotDrive;		// robot will use PWM 1-4 for drive motors
 
 	int m_dsPacketsReceivedInCurrentSecond;	// keep track of the ds packets received in the current second
 
@@ -137,6 +137,7 @@ public class DefaultRobot extends IterativeRobot{
 
             driveAssign.addElement(new Integer(2));
             driveAssign.addElement(new Integer(2));
+            driveAssign.addElement(new Integer(ConstantManager.driveType));
             controllerAssign.addElement(new Vector());
             posReq.addElement(new Integer(2));
             posReq.addElement(new Integer(2));
@@ -149,10 +150,10 @@ public class DefaultRobot extends IterativeRobot{
             lineAssign.addElement(new Integer(3));
             driveJagStatus.addElement(new Vector(0));
             driveJagStatus.addElement(new Vector(0));
-            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(0));
-            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(0));
-            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(0));
-            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(0));
+            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(1)); //0 is the failed state!
+            ((Vector) driveJagStatus.elementAt(0)).addElement(new Integer(1));
+            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(1));
+            ((Vector) driveJagStatus.elementAt(1)).addElement(new Integer(1));
             driveJagStatus.addElement(new Vector(2));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
@@ -329,8 +330,12 @@ public class DefaultRobot extends IterativeRobot{
                 m_driveMode = TANK_DRIVE;
             }
         }*/ //start roman code:
+        System.out.println("DefaultRobot: values to be sent as driverInput");
+        System.out.println(((Boolean) driverInput.drive().elementAt(0)).booleanValue());
+        System.out.println(((Double) driverInput.drive().elementAt(1)).doubleValue());
+        System.out.println(((Double) driverInput.drive().elementAt(2)).doubleValue());
         try{ //best to reference other mclv 'main'
-        Hardware.driveAssign(drive.request(posReq, driverInput.drive()), driveJagStatus);
+        Hardware.driveAssign(Drive.request(posReq, driverInput.drive()), driveJagStatus);
         }
         catch (CANTimeoutException canFail){
             System.out.println("Can timeout, switching to pwm");

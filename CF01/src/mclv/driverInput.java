@@ -4,6 +4,7 @@
  */
 
 package mclv;
+import mclv.utils.*;
 import java.util.*;
 import edu.wpi.first.wpilibj.Joystick;
 /**
@@ -25,7 +26,7 @@ public class driverInput {
         controllers = new Vector(0); //Configure controller type vals in constant manager
         
          for(int i = 0; i<controllerConfig.size(); i++){
-            controllers.addElement(new Vector());
+            controllers.addElement(new Vector(0));
             for(int c = 0; c<((Vector) controllerConfig.elementAt(i)).size(); c++){
                 if(((Integer) ((Vector) controllerConfig.elementAt(i)).elementAt(c)).intValue() == 1){
                     ((Vector) controllers.elementAt(i)).addElement(new Joystick(nextPort));
@@ -40,19 +41,25 @@ public class driverInput {
 
     public static Vector drive(){ //Reconfig to run from single driverInput call
         driveVals = new Vector(0);
-        driveVals.addElement(new Boolean(true)); //Expand for more values! FALSE
-        driveVals.addElement(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getY()));
-        driveVals.addElement(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getY()));
+        driveVals.addElement(new Boolean(false)); //Expand for more values! FALSE
+        driveVals.addElement(new Double(configChoose(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getY())));
+        driveVals.addElement(new Double(configChoose(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getY())));
         return driveVals;
     }
     public static Vector arm(){
         armVals = new Vector(3);
         ((Boolean) armVals.elementAt(0)).equals(new Boolean(false)); //Expand for more values!
         ((Double) armVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(0)).getX()));
-        ((Double) armVals.elementAt(1)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getX()));
+        ((Double) armVals.elementAt(2)).equals(new Double(((Joystick) ((Vector) controllers.elementAt(0)).elementAt(1)).getX()));
         return armVals;
     }
     public static Vector info(){ //create info generator
         return new Vector(0);
+    }
+    private static double configChoose(double output){ //handles all adjustments
+        if(ConstantManager.joyInverted && output != 0){
+            output = -output;
+        }
+        return output;
     }
 }

@@ -5,21 +5,26 @@
 
 package mclv.utils;
 import mclv.device.*;
+import java.util.*;
 
 /**
  *
  * @author god
  */
 public class DeviceSelect {
-    private static Object objectHolder;
+    private static Vector objectHolder;
+    private static Object objectTest;
     public DeviceSelect(){}
-    public static Object selectInit(int type){
-        objectHolder = new Object();
+    public static Vector selectInit(int type){
+        objectHolder = new Vector(0);
+        objectTest = new Object();
          if(type == ConstantManager.driveType || type == ConstantManager.armType){   
-            if(ConstantManager.pwm){
+            if(!ConstantManager.pwm){
+                System.out.println("DeviceSelect selectInit asking for CANJag");
                 objectHolder = CANJag.init();
             }
             else{
+                System.out.println("DeviceSelect selectInit asking for Pwm");
                 objectHolder = Pwm.init();
             }
          }
@@ -34,7 +39,7 @@ public class DeviceSelect {
          }
         return objectHolder;
     }
-    public static Class selectAssign(int type){
+    /*public static Class selectAssign(int type){
         objectHolder = new Object();
          if(type == ConstantManager.driveType || type == ConstantManager.armType){   
             if(ConstantManager.pwm){
@@ -54,5 +59,5 @@ public class DeviceSelect {
              objectHolder = AnalogIn.class;
          }
         return objectHolder.getClass();
-    }
+    }*/
 }

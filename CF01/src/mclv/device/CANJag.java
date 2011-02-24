@@ -22,6 +22,8 @@ public class CANJag { //This wraps info for monitor into the actual jag object i
         instanceBus = bus;
         try{
             jagInstance = new CANJaguar(bus);
+            System.out.println("CANJag constructor: created CANJaguar on bus");
+            System.out.println(bus);
         }
         catch(CANTimeoutException canFail){
             System.out.println("CAN Timeout while assigning ID:");
@@ -32,8 +34,11 @@ public class CANJag { //This wraps info for monitor into the actual jag object i
     public static Vector init(){ // boolean reinit represents whether this is the first time you're re-initializing
         
         jaguar = new Vector(0);
+        System.out.println("CANJag.init: creating new CANJag");
         jaguar.addElement(new CANJag(canBus));
+        System.out.println("CANJag.init: creating new datastorage vector");
         jaguar.addElement(new Vector(0)); //This is for data storage
+        System.out.println("CANJag.init: creating new integer ID");
         jaguar.addElement(new Integer(canBus -1)); //this is the ID number
         canBus++;
         return jaguar; //Might want to attach success boolean for outputting which jaguar was at fault in the overall grid.
@@ -43,7 +48,9 @@ public class CANJag { //This wraps info for monitor into the actual jag object i
     }
     public void assign(double output){
         try{
-             jagInstance.setX(output);
+            System.out.println("CANJag.assign: assigning ouput value to CANJaguar device");
+            System.out.println(output);
+            jagInstance.setX(output);
         }
         catch(CANTimeoutException canFail){
             System.out.println("CAN Timeout while assigning drive value:");
