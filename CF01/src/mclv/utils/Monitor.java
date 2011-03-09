@@ -7,6 +7,7 @@ package mclv.utils;
 //import mclv.*;
 import java.util.*;
 import mclv.Hardware;
+import edu.wpi.first.wpilibj.Timer;
 //import suanshu.*;
 
 
@@ -14,30 +15,70 @@ import mclv.Hardware;
  *
  * @author god
  */
-public class Monitor {/*
-public final int freq = 1; //Default frequency value
-public Vector hardware;
-    public Monitor(){ //Should be initialized from hardware class
-        hardware = new Vector(0); //0 = drive, 1 = arm, 2 = sensors. Hierarchy: Type, element + Freq val, Data Vector 
-        for(int i = 0; i<Hardware.hardwareReport().size(); i++){
-            hardware.addElement(new Vector(0));
-            for(int c = 0; c<((Vector) Hardware.hardwareReport().elementAt(i)).size(); c++){
-                ((Vector) hardware.elementAt(i)).addElement(new Vector(0));
-                 if(c == Hardware.hardwareReport().size() - 1 && ((Vector) Hardware.hardwareReport().elementAt(i)).elementAt(c) != null && i != 2){
-                    hardware.addElement(((Vector) Hardware.hardwareReport().elementAt(i)).elementAt(c));
-                }
-                 else if(c == Hardware.hardwareReport().size() - 1 && i !=2){ //Null case
-                    hardware.addElement(new Integer(freq)); //assign default value
-                 }
-                for(int j = 0; j<((Integer) ((Vector) Hardware.hardwareReport().elementAt(i)).elementAt(c)).intValue(); j++){
-                ((Vector) ((Vector) hardware.elementAt(i)).elementAt(c)).addElement(new Vector(0)); //This is where data is actually stored
-
-                }
-            }
+public class Monitor {
+    public int instanceType;
+    public static Vector objectContainer;
+    private static int initCount = 0;
+    private static int updateCount = 0;
+    private static Vector updateTimeLog;
+    public int initId;
+    private Vector instanceData;
+    public Vector instanceStatus;
+    /* Datastructure:
+     * instanceData for driveType
+     */
+    
+    
+    public Monitor(int type){
+        if(initCount == 0){
+            objectContainer = new Vector(0);
+            updateTimeLog = new Vector(0);
+        }
+        instanceData = new Vector(0);
+        instanceStatus = new Vector(0);
+        initId = initCount;
+        
+        
+        objectContainer.addElement(this);
+        initCount++;
+    }
+    
+    public Vector getState(){ //first element is a Boolean, the rest is specific info about the state tbd.
+        System.out.println("Monitor.getState: be advised, monitor object requested is of type");
+        System.out.println(instanceType);
+        
+        return instanceStatus;
+    }
+    public static void updateAll(){
+        for(int i = 0; i<objectContainer.size(); i++){
+            ((Monitor) objectContainer.elementAt(i)).update();
         }
         
-    }*/
+    }
+    public static void updateByType(int type){
+        for(int i = 0; i<objectContainer.size(); i++){
+            if(((Monitor) objectContainer.elementAt(i)).instanceType == type){
+                ((Monitor) objectContainer.elementAt(i)).update();
+            }
+        }
+    }
     public void update(){
-        //add analysis here
+        if(instanceType == ConstantManager.driveType){
+            
+        }
+        else if(instanceType == ConstantManager.armType){
+            
+        }
+        else if(instanceType == ConstantManager.victorType){
+            
+        }
+        else if(instanceType == ConstantManager.lineType){
+            
+        }
+        else if(instanceType == ConstantManager.posType){
+            
+        }
+        updateTimeLog.addElement(new Double(Timer.getFPGATimestamp())); //time stamp, element is the update count
+        updateCount++;
     }
 }

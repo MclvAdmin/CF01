@@ -118,7 +118,8 @@ public class Hardware {
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
                             System.out.println("Init asking for arm assignment");
-                            ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.armType));    
+                            //((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.armType));
+                            ((Vector) ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.armType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
                             System.out.println("Init asking for victor assignment");
@@ -192,6 +193,49 @@ public class Hardware {
             
         }
         init++;
+    }
+    public static void assign(Vector hardwareAssign){ //needs safety functionality from monitor (maybe a request goes in first that is either confirmed or denied). Intermediate method? Also, needs driver flag
+        if(init == 0){
+            System.out.println("Hardware.assign: run init first. no action taken.");        
+        }
+        else if(hardwareAssign.lastElement().getClass() == (new Vector(0)).getClass()){ //that should do it!
+            System.out.println("Hardware.assign: recognized multiple type assignment request, sending each individually to assignSingleType");
+            if(hardware.size() > hardwareAssign.size()){
+                System.out.println("Hardware.assign: NOTE: full assignment set not given"); //create method for assignable types vs. unassignable
+            }
+            for(int hardIndex = 0; hardIndex<Math.min(hardware.size(), hardwareAssign.size()); hardIndex++){
+                if(((Vector) hardwareAssign.elementAt(hardIndex)).lastElement().getClass() == (new Integer(0)).getClass()){
+                    System.out.println("Hardware.assign: sending assignments to assignSingleType for type:");
+                    System.out.println(hardIndex + ConstantManager.minTypes());
+                    Hardware.assignSingleType(hardwareAssign);
+                }
+                else{
+                    System.out.println("Hardware.assign: Error: incorrect assignment format; no further action taken on type:");
+                    System.out.println(hardIndex + ConstantManager.minTypes());
+                }
+                
+            }
+        }
+        else if((hardwareAssign.lastElement().getClass() == (new Integer(0)).getClass())){
+            System.out.println("Hardware.assign: recognized single type assignment parameter, sending to assignSingleType");
+            Hardware.assignSingleType(hardwareAssign);
+        }
+    }
+    public static void assignSingleType(Vector hardwareTypeAssign){
+        Vector hardwareHolder = new Vector(0);
+        for(int hardIndex = 0; hardwareHolder.size()<hardwareTypeAssign.size(); hardIndex++){
+           hardwareHolder.addElement(hardwareTypeAssign.elementAt(hardIndex));
+        }
+        hardwareTypeAssign.removeElementAt(hardwareTypeAssign.size() - 1); //removes last element which is a tag value anyway
+        assignSingleTypeByType(hardwareTypeAssign,((Integer) hardwareHolder.lastElement()).intValue());
+    }
+    
+    public static void assignSingleTypeByType(Vector hardwareTypeAssign, int type){
+        for(int typeSystem = 0; typeSystem<hardwareTypeAssign.size(); typeSystem++){
+            for(int typeSystemMember = 0; typeSystemMember<((Vector) hardwareTypeAssign.elementAt(typeSystem)).size(); typeSystemMember++){
+             decideAssign(type, typeSystem, typeSystemMember, ((Double)  ((Vector) hardwareTypeAssign.elementAt(typeSystem)).elementAt(typeSystemMember)).doubleValue());  
+            }
+        }
     }
 
     public static void driveInit(Vector driveAssign, String mode){ //Modes: fresh, reinit, grow (fresh is anything besides reinit or grow)
@@ -282,270 +326,6 @@ public class Hardware {
         }
         driveInit++;
     }
-    public static void armInit(Vector armAssign, String mode){
-        if(assignInit == 0){
-            assignment = new Vector(0);
-            assignInit++;
-        }
-        if(armInit == 0){
-            armJaguars = new Vector(0);
-            armWiring = new Vector(0);
-        }
-        if(mode.equals("reinit")){
-            for(int i = 0; i<armAssign.size(); i++){
-                armJaguars.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) armAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) armJaguars.elementAt(i)).addElement(CANJag.init());
-                }
-            }
-        
-            if(assignment.isEmpty() &! mode.equals("reinit")){
-                armAssign.addElement(new Integer(armType)); //specifies type, last element of armAssign in assignment
-                assignment.addElement(armAssign);
-            }
-            else if(mode.equals("reinit") &! assignment.isEmpty()){
-                for(int j = 0; j<assignment.size(); j++){
-                    if(((Integer)((Vector) assignment.elementAt(j)).lastElement()).intValue() == 1){
-                        (assignment.elementAt(j)).equals(armAssign);
-                    }
-                }
-            }
-            else if(mode.equals("reinit") && assignment.isEmpty()){ //make case for reinit + existing arm assignments!
-                //throw improper first init exception
-                Hardware.armInit(armAssign, "fresh");
-            }
-            else{
-
-            }
-        }
-        else if(mode.equals("grow")){           
-            for(int i = 0; i<armAssign.size(); i++){
-                armJaguars.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) armAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) armJaguars.lastElement()).addElement(CANJag.init());
-                }
-            }
-            for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == armType){
-                        ((Vector) assignment.elementAt(i)).removeElementAt(((Vector) assignment.elementAt(i)).size()-1); //last element
-                        for(int c = 0; c<armAssign.size(); c++){
-                        ((Vector) assignment.elementAt(i)).addElement(armAssign.elementAt(c));
-                        }
-                        ((Vector) assignment.elementAt(i)).addElement(new Integer(armType));
-                    }
-            }
-        }
-        else if(mode.equals("fresh")){
-            if(!armJaguars.isEmpty()){
-                armInit(armAssign,"hardware");
-            }
-            if(assignment.isEmpty()){
-                armAssign.addElement(new Integer(armType)); //specifies type, last element of armAssign in assignment
-                assignment.addElement(armAssign);
-            }
-            else if(!assignment.isEmpty()){
-                armAssign.addElement(new Integer(armType));
-                for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == armType){
-                        ((Vector) assignment.elementAt(i)).removeAllElements();
-                        ((Vector) assignment.elementAt(i)).addElement(armAssign);
-                    }
-                }
-            }
-        }
-        else{
-            //reInit(armAssign, new Integer(1)); //basically initializes
-            armInit(armAssign, "reinit");
-        }
-        if(mode.equals("hardware")){
-            System.out.println("warning: fresh assignment with risk of existing arm jaguars. Removing current arm jaguars and reinitializing");
-            armJaguars.removeAllElements();
-            CANJag.reInit();
-            for(int i = 0; i<armAssign.size(); i++){
-                armJaguars.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) armAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) armJaguars.lastElement()).addElement(CANJag.init());
-                }
-            }
-        }
-        armInit++;
-    }
-    public static void victorInit(Vector victorAssign, String mode){
-        if(assignInit == 0){
-            assignment = new Vector(0);
-            assignInit++;
-        }
-        if(victorInit == 0){
-            victors = new Vector(0);
-            victorWiring = new Vector(0);
-        }
-        if(mode.equals("reinit")){
-            for(int i = 0; i<victorAssign.size(); i++){
-                victors.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.elementAt(i)).addElement(VictorMclv.init());
-                }
-            }
-        
-            if(assignment.isEmpty() &! mode.equals("reinit")){
-                victorAssign.addElement(new Integer(victorType)); //specifies type, last element of victorAssign in assignment
-                assignment.addElement(victorAssign);
-            }
-            else if(mode.equals("reinit") &! assignment.isEmpty()){
-                for(int j = 0; j<assignment.size(); j++){
-                    if(((Integer)((Vector) assignment.elementAt(j)).lastElement()).intValue() == 1){
-                        (assignment.elementAt(j)).equals(victorAssign);
-                    }
-                }
-            }
-            else if(mode.equals("reinit") && assignment.isEmpty()){ //make case for reinit + existing victor assignments!
-                //throw improper first init exception
-                Hardware.victorInit(victorAssign, "fresh");
-            }
-            else{
-
-            }
-        }
-        else if(mode.equals("grow")){           
-            for(int i = 0; i<victorAssign.size(); i++){
-                victors.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.lastElement()).addElement(VictorMclv.init());
-                }
-            }
-            for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == victorType){
-                        ((Vector) assignment.elementAt(i)).removeElementAt(((Vector) assignment.elementAt(i)).size()-1); //last element
-                        for(int c = 0; c<victorAssign.size(); c++){
-                        ((Vector) assignment.elementAt(i)).addElement(victorAssign.elementAt(c));
-                        }
-                        ((Vector) assignment.elementAt(i)).addElement(new Integer(victorType));
-                    }
-            }
-        }
-        else if(mode.equals("fresh")){
-            if(!victors.isEmpty()){
-                victorInit(victorAssign,"hardware");
-            }
-            if(assignment.isEmpty()){
-                victorAssign.addElement(new Integer(victorType)); //specifies type, last element of victorAssign in assignment
-                assignment.addElement(victorAssign);
-            }
-            else if(!assignment.isEmpty()){
-                victorAssign.addElement(new Integer(victorType));
-                for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == victorType){
-                        ((Vector) assignment.elementAt(i)).removeAllElements();
-                        ((Vector) assignment.elementAt(i)).addElement(victorAssign);
-                    }
-                }
-            }
-        }
-        else{
-            //reInit(victorAssign, new Integer(1)); //basically initializes
-            victorInit(victorAssign, "reinit");
-        }
-        if(mode.equals("hardware")){
-            System.out.println("warning: fresh assignment with risk of existing victor jaguars. Removing current victor jaguars and reinitializing");
-            victors.removeAllElements();
-            VictorMclv.reInit();
-            for(int i = 0; i<victorAssign.size(); i++){
-                victors.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) victorAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) victors.lastElement()).addElement(VictorMclv.init());
-                }
-            }
-        }
-        victorInit++;
-    }
-    public static void posInit(Vector posAssign, String mode){
-        if(assignInit == 0){
-            assignment = new Vector(0);
-            assignInit++;
-        }
-        if(posInit == 0){
-            posSense = new Vector(0);
-            posWiring = new Vector(0);
-        }
-        if(mode.equals("reinit")){
-            for(int i = 0; i<posAssign.size(); i++){
-                posSense.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) posAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) posSense.elementAt(i)).addElement(CANJag.init());
-                }
-            }
-        
-            if(assignment.isEmpty() &! mode.equals("reinit")){
-                posAssign.addElement(new Integer(posType)); //specifies type, last element of posAssign in assignment
-                assignment.addElement(posAssign);
-            }
-            else if(mode.equals("reinit") &! assignment.isEmpty()){
-                for(int j = 0; j<assignment.size(); j++){
-                    if(((Integer)((Vector) assignment.elementAt(j)).lastElement()).intValue() == 1){
-                        (assignment.elementAt(j)).equals(posAssign);
-                    }
-                }
-            }
-            else if(mode.equals("reinit") && assignment.isEmpty()){ //make case for reinit + existing pos assignments!
-                //throw improper first init exception
-                Hardware.posInit(posAssign, "fresh");
-            }
-            else{
-
-            }
-        }
-        else if(mode.equals("grow")){           
-            for(int i = 0; i<posAssign.size(); i++){
-                posSense.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) posAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) posSense.lastElement()).addElement(CANJag.init());
-                }
-            }
-            for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == posType){
-                        ((Vector) assignment.elementAt(i)).removeElementAt(((Vector) assignment.elementAt(i)).size()-1); //last element
-                        for(int c = 0; c<posAssign.size(); c++){
-                        ((Vector) assignment.elementAt(i)).addElement(posAssign.elementAt(c));
-                        }
-                        ((Vector) assignment.elementAt(i)).addElement(new Integer(posType));
-                    }
-            }
-        }
-        else if(mode.equals("fresh")){
-            if(!posSense.isEmpty()){
-                posInit(posAssign,"hardware");
-            }
-            if(assignment.isEmpty()){
-                posAssign.addElement(new Integer(posType)); //specifies type, last element of posAssign in assignment
-                assignment.addElement(posAssign);
-            }
-            else if(!assignment.isEmpty()){
-                posAssign.addElement(new Integer(posType));
-                for(int i = 0; i<assignment.size(); i++){
-                    if(((Integer) ((Vector) assignment.elementAt(i)).lastElement()).intValue() == posType){
-                        ((Vector) assignment.elementAt(i)).removeAllElements();
-                        ((Vector) assignment.elementAt(i)).addElement(posAssign);
-                    }
-                }
-            }
-        }
-        else{
-            //reInit(posAssign, new Integer(1)); //basically initializes
-            posInit(posAssign, "reinit");
-        }
-        if(mode.equals("hardware")){
-            System.out.println("warning: fresh assignment with risk of existing pos jaguars. Removing current pos jaguars and reinitializing");
-            posSense.removeAllElements();
-            CANJag.reInit();
-            for(int i = 0; i<posAssign.size(); i++){
-                posSense.addElement(new Vector(0));
-                for(int j = 0; j<((Integer) posAssign.elementAt(i)).intValue(); j++){
-                    ((Vector) posSense.lastElement()).addElement(CANJag.init());
-                }
-            }
-        }
-        posInit++;
-    }
     /*
     public static void reInit(Vector typeAssignVals, Integer type){
         int typeCheck = 0;
@@ -610,7 +390,7 @@ public class Hardware {
                     if(((Vector) driveRequest.elementAt(i)).elementAt(c) != null && ((Integer)((Vector) driveJaguarStatus.elementAt(i)).elementAt(c)).intValue() != 0){
                        //((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(i)).elementAt(c)).elementAt(0)).assign(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
                        System.out.println("Hardware.driveAssign: drive assignments valid and jaguar status good. Assigning argument values");
-                        decideAssign(i, c,((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
+                        decideAssign(ConstantManager.driveType, i, c,((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
                        //System.out.println(((Double) ((Vector) driveRequest.elementAt(i)).elementAt(c)).doubleValue());
                     }
                     else if(((Integer)((Vector) driveJaguarStatus.elementAt(i)).elementAt(c)).intValue() != 0){ //If the value is null, leave jaguars alone
@@ -621,7 +401,7 @@ public class Hardware {
                         for(int j=0; j<((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size(); j++){
                             if(c <((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(j)).size()){ //Make sure this jaguar exists for all systems before assigning a value
                             //((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(j)).elementAt(c)).elementAt(0)).assign(0); //I assume this lets motor spin freely, will probably bring entire system down via overheat
-                            decideAssign(j, c, ConstantManager.failedJagAssign);
+                            decideAssign(ConstantManager.driveType, j, c, ConstantManager.failedJagAssign);
                             }
                         }
                         
@@ -753,17 +533,32 @@ public class Hardware {
     public static Vector assignmentByType(int type){ //ensure it doesnt reach the second return if first occurs
         return(((Vector) assignment.elementAt(type - ConstantManager.minTypes())));
     }
-    private static void decideAssign(int system, int memberId, double output){ //decide which type to cast the jaguar as; pwm or CANJag?
-        if(ConstantManager.pwm){ //if pwm is true
-            System.out.println("Hardware.decideAssign: assigning values to Pwm");
-            System.out.println(output);
-            ((Pwm) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+    private static void decideAssign(int type, int system, int memberId, double output){ //decide which type to cast the jaguar as; pwm or CANJag?
+        if(type == ConstantManager.driveType || type == ConstantManager.armType){
+            if(ConstantManager.pwm){ //if pwm is true
+                System.out.println("Hardware.decideAssign: assigning values to Pwm");
+                System.out.println(output);
+                ((Pwm) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+            }
+            else{ //assign to the proper jag
+                System.out.println("Hardware.decideAssign: assigning values to CANJag");
+                System.out.println(output);
+                ((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+            }              
         }
-        else{ //assign to the proper jag
-            System.out.println("Hardware.decideAssign: assigning values to CANJag");
+        else if(type == ConstantManager.victorType){
+            System.out.println("Hardware.decideAssign: assigning values to VictorMclv");
             System.out.println(output);
-            ((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
+            ((VictorMclv) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
         }
+        else if(type == ConstantManager.lineType){
+            System.out.println("Hardware.decideAssign: cannot assign to lineType");
+        }
+        else if(type == ConstantManager.posType){
+            System.out.println("Hardware.decideAssign: cannot assign to posType");
+        } 
+        
+        
     }
     
 }

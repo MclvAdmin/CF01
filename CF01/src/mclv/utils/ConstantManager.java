@@ -33,6 +33,41 @@ public class ConstantManager {
     public static double wristCoeff = 0.1;
     
     public static boolean joyInverted = true;
+    public static int atk3ButtonMax = 12;
+    public static int joyIndex = 0;
+    public static int joySquareSide = 1; 
+    public static int joySquareButton = 2; 
+    public static int joySqrtSide = 1; 
+    public static int joySqrtButton = 3; 
+    public static boolean joyMix = true;
+    public static double joyMixMargin = 2.5;
+    public static double joyMixNullRange = 1;
+    public static boolean armInverted = false;
+    
+    public static double mainIntervalLength = 0.3;
+    public static double mainSpeed = 0.4;
+    public static double mainManualSpeed = 1;
+    public static int mainPlusButton = 1;
+    public static int mainMinusButton = 2;
+    public static boolean mainSeqInv = false;
+    
+    public static double wristIntervalLength = 0.1;
+    public static double wristSpeed = 0.07;
+    public static double wristManualSpeedDown = .05;
+    public static double wristManualSpeedUp = 1;
+    public static int wristPlusButton = 4;
+    public static int wristMinusButton = 3;
+    public static boolean wristSeqInv = false;
+    
+    public static double clawIntervalLength = 3;
+    public static double clawSpeed = .75;
+    public static double clawManualSpeed = 1;
+    public static int clawPlusButton = 6;
+    public static int clawMinusButton = 5;
+    public static boolean clawSeqInv = false;
+    
+    public static boolean armSequenceEnabled = false;
+    
     
     private static Vector typeList;
     private static int calc;

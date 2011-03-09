@@ -8,14 +8,14 @@
 package edu.wpi.first.wpilibj.defaultCode;
 
 
-import mclv.logomotion.Drive;
+import mclv.logomotion.*;
 import mclv.utils.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
-import edu.wpi.first.wpilibj.RobotDrive;
+//import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.Watchdog;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import mclv.*;
 import java.util.*;
@@ -101,13 +101,15 @@ public class DefaultRobot extends IterativeRobot{
 	int m_autoPeriodicLoops;
 	int m_disabledPeriodicLoops;
 	int m_telePeriodicLoops;
-
+        
+        DriverStation mclvDs;
         Vector driveAssign;
 
         //Hardware cfHard;
         Vector emptyVector;
         Vector controllerAssign;
         Vector lineAssign;
+        Vector armAssign;
         boolean bool;
 
         //Drive cfDrive;
@@ -125,9 +127,12 @@ public class DefaultRobot extends IterativeRobot{
      * providing named objects for each of the robot interfaces.
      */
     public DefaultRobot() throws CANTimeoutException {
+        //Watchdog.getInstance().feed();
         System.out.println("Roman Constructor Started\n");
          //cfDrive = new Drive(new Vector());
+         //DriverStation.
          driveAssign = new Vector(0);
+         armAssign = new Vector(0);
          controllerAssign = new Vector(0);
          posReq = new Vector(0);
          driveJagStatus = new Vector(0);
@@ -138,7 +143,13 @@ public class DefaultRobot extends IterativeRobot{
             driveAssign.addElement(new Integer(2));
             driveAssign.addElement(new Integer(2));
             driveAssign.addElement(new Integer(ConstantManager.driveType));
-            controllerAssign.addElement(new Vector());
+             
+            armAssign.addElement(new Integer(1));
+            armAssign.addElement(new Integer(1));
+            armAssign.addElement(new Integer(1));
+            armAssign.addElement(new Integer(ConstantManager.armType));
+            
+            controllerAssign.addElement(new Vector(0));
             posReq.addElement(new Integer(2));
             posReq.addElement(new Integer(2));
             //posReq.addElement(new Vector(2));
@@ -157,8 +168,11 @@ public class DefaultRobot extends IterativeRobot{
             driveJagStatus.addElement(new Vector(2));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
+            ((Vector) controllerAssign.elementAt(0)).addElement(new Integer(1));
             Vector hardwareAssign = new Vector(0);
             hardwareAssign.addElement(driveAssign);
+            hardwareAssign.addElement(armAssign);
+           
             
             Hardware.init(hardwareAssign, "fresh");
             //Hardware.lineInit();
@@ -216,11 +230,12 @@ public class DefaultRobot extends IterativeRobot{
 	public void robotInit() {
 		// Actions which would be performed once (and only once) upon initialization of the
 		// robot would be put here.
-
+                //Watchdog.getInstance().feed();
 		System.out.println("RobotInit() completed.\n");
 	}
 
 	public void disabledInit() {
+            //Watchdog.getInstance().feed();
 		m_disabledPeriodicLoops = 0;			// Reset the loop counter for disabled mode
 		//ClearSolenoidLEDsKITT();
         startSec = (int)(Timer.getUsClock() / 1000000.0);
@@ -228,11 +243,13 @@ public class DefaultRobot extends IterativeRobot{
 	}
 
 	public void autonomousInit() {
+            //Watchdog.getInstance().feed();
 		m_autoPeriodicLoops = 0;				// Reset the loop counter for autonomous mode
 		//ClearSolenoidLEDsKITT();
 	}
 
 	public void teleopInit() {
+            //Watchdog.getInstance().feed();
 		m_telePeriodicLoops = 0;				// Reset the loop counter for teleop mode
 		m_dsPacketsReceivedInCurrentSecond = 0;	// Reset the number of dsPackets in current second
 		m_driveMode = UNINITIALIZED_DRIVE;		// Set drive mode to uninitialized
@@ -245,7 +262,7 @@ public class DefaultRobot extends IterativeRobot{
 
 	public void disabledPeriodic()  {
 		// feed the user watchdog at every period when disabled
-		Watchdog.getInstance().feed();
+		//Watchdog.getInstance().feed();
 
 		// increment the number of disabled periodic loops completed
 		m_disabledPeriodicLoops++;
@@ -259,12 +276,12 @@ public class DefaultRobot extends IterativeRobot{
 
 	public void autonomousPeriodic() {
 		// feed the user watchdog at every period when in autonomous
-		Watchdog.getInstance().feed();
+		//Watchdog.getInstance().feed();
 
 		m_autoPeriodicLoops++;
 
 		// generate KITT-style LED display on the solenoids
-		SolenoidLEDsKITT( m_autoPeriodicLoops );
+		//SolenoidLEDsKITT( m_autoPeriodicLoops );
 
 		/* the below code (if uncommented) would drive the robot forward at half speed
 		 * for two seconds.  This code is provided as an example of how to drive the
@@ -285,7 +302,7 @@ public class DefaultRobot extends IterativeRobot{
 
 	   public void teleopPeriodic(){ //CHANGE ITERATIVE ROBOT
         // feed the user watchdog at every period when in autonomous
-        Watchdog.getInstance().feed();
+        //Watchdog.getInstance().feed();
 
         // increment the number of teleop periodic loops completed
         m_telePeriodicLoops++;
@@ -334,14 +351,20 @@ public class DefaultRobot extends IterativeRobot{
         System.out.println(((Boolean) driverInput.drive().elementAt(0)).booleanValue());
         System.out.println(((Double) driverInput.drive().elementAt(1)).doubleValue());
         System.out.println(((Double) driverInput.drive().elementAt(2)).doubleValue());
-        try{ //best to reference other mclv 'main'
-        Hardware.driveAssign(Drive.request(posReq, driverInput.drive()), driveJagStatus);
-        }
-        catch (CANTimeoutException canFail){
+        //try{ //best to reference other mclv 'main'
+        
+        //Hardware.assign(Drive.request(posReq, driverInput.drive()));
+       driverInput.update(); 
+       Drive.drive();
+       Arm.arm();
+       //Arm.arm();
+        
+        //}
+        /*catch (CANTimeoutException canFail){
             System.out.println("Can timeout, switching to pwm");
             ConstantManager.pwm = true;
             Hardware.init(new Vector(0), "reinit"); //now THAT is the shit.. i hope it works. This will reinitialize a
-        }
+        }*/
 
     }
 

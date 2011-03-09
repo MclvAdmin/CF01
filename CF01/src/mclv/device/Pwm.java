@@ -5,6 +5,7 @@
 
 package mclv.device;
 import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.Jaguar;
 
 import java.util.*;
 /**
@@ -16,11 +17,11 @@ public class Pwm { //This wraps info for monitor into the actual jag object init
     private static final int PWM_BUS_MIN = 1;
     private static int pwmBus = PWM_BUS_MIN; //use index value to identify jag
     public int instanceBus; //public for debugging purposes
-    public PWM pwmInstance; //public for monitor class
+    public Jaguar pwmInstance; //public for monitor class
     
     public Pwm(int bus){
         instanceBus = bus;
-        pwmInstance = new PWM(bus);
+        pwmInstance = new Jaguar(bus);
         System.out.println("Pwm constructor: created PWM on bus");
         System.out.println(bus);
     }
@@ -42,6 +43,6 @@ public class Pwm { //This wraps info for monitor into the actual jag object init
     public void assign(double output){
             System.out.println("Pwm.assign: assigning ouput value to PWM device");
             System.out.println(output);
-            pwmInstance.setPosition(output);
+            pwmInstance.set(output);
     }
 }

@@ -3,8 +3,12 @@
  * and open the template in the editor.
  */
 
+
+
 package mclv.logomotion;
 import java.util.*;
+import mclv.utils.*;
+import mclv.*;
 /**
  *
  * @author god
@@ -12,8 +16,15 @@ import java.util.*;
 public class Drive { //Consider static methods
     private static Vector driveSet;
     private static Vector driveOut;
+    public static Vector driveVals;
+    public static int init = 0;
     public Drive(Vector driveSetConfig){
         driveSet = driveSetConfig;    
+    }
+    
+    public static void init(){
+        driveVals = new Vector(0);
+        init++;
     }
   
     public static Vector request(Vector positionReq, Vector controllerDrive){ //Makes 'driveAssign' for hardware object ..... positionReq includes data as to automation of drive from sensor class
@@ -30,7 +41,7 @@ public class Drive { //Consider static methods
 
         }
         /* else if..... for(int i = 0; i<positionReq.size() -2; i++){
-                for(int c = 0; c<((Vector) positionReq.elementAt(i)).size(); c++){
+                for(int c = 0; c<((Vector) positionReq.elementAt(i)).size(); c++){9
 
                 }
             }*/
@@ -52,7 +63,32 @@ public class Drive { //Consider static methods
                 }
             }
         }
+        driveOut.addElement(new Integer(ConstantManager.driveType));
+        System.out.println("Drive.request: REPORT:");
+        System.out.println("Drive.request: Assignment size:");
+        System.out.println(driveOut.size() -1);
         return driveOut; //Send to hardware
+    }
+    
+    public static void drive(){
+        Vector driveAssign = new Vector(0);
+        if(init == 0){
+            driveVals = new Vector(0);
+        }
+        
+        for(int systemIndex = 0; systemIndex< ((Vector) Hardware.hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).size(); systemIndex++){
+            driveAssign.addElement(new Vector(0));
+            for(int memberIndex = 0; memberIndex < ((Vector) ((Vector) Hardware.hardware.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(systemIndex)).size(); memberIndex++){
+                if(!((Boolean) ((Vector) driverInput.inputVals.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(0)).booleanValue()){
+                    ((Vector) driveAssign.elementAt(systemIndex)).addElement(((Vector) driverInput.inputVals.elementAt(ConstantManager.driveType - ConstantManager.minTypes())).elementAt(systemIndex + 1));
+                }
+                else{
+                    //Needs choices here; goto class that determines the course of action if drivers r not in control!
+                }
+            }
+        }
+        driveAssign.addElement(new Integer(ConstantManager.driveType));
+        Hardware.assign(driveAssign);
     }
     public void reconfig(Vector controllerConfig, Vector driveSetConfig){
         
