@@ -31,6 +31,9 @@ public class DeviceSelect {
          else if(type == ConstantManager.victorType){
              objectHolder = VictorMclv.init();
          }
+         else if(type == ConstantManager.pneuType){
+             objectHolder = SolenoidMclv.init();
+         }
          else if(type == ConstantManager.lineType){
              objectHolder = DigIn.init();
          }

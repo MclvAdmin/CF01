@@ -34,7 +34,7 @@ public class Arm {
         }*/
     }
     public static void arm(){
-        System.out.println("Arm.arm: arm() start");
+        Debug.output("Arm.arm: Start", null, ConstantManager.armDebug);
         Vector armAssign = new Vector(0);
         if(init == 0){
             armVals = new Vector(0);
@@ -44,16 +44,39 @@ public class Arm {
             armAssign.addElement(new Vector(0));
             for(int memberIndex = 0; memberIndex < ((Vector) ((Vector) Hardware.hardware.elementAt(ConstantManager.armType - ConstantManager.minTypes())).elementAt(systemIndex)).size(); memberIndex++){
                 if(!((Boolean) ((Vector) driverInput.inputVals.elementAt(ConstantManager.armType - ConstantManager.minTypes())).elementAt(0)).booleanValue()){
-                    System.out.println("Arm.arm: ASSIGNING TO ARM");
+                    Debug.output("Arm.arm: ASSIGNING TO ARM", null, ConstantManager.armDebug);
                     ((Vector) armAssign.elementAt(systemIndex)).addElement(((Vector) driverInput.inputVals.elementAt(ConstantManager.armType - ConstantManager.minTypes())).elementAt(systemIndex + 1)); //+ 1?
                 }
                 else{
-                    System.out.println("Arm.arm: NOT ASSIGNING TO ARM");
+                    Debug.output("Arm.arm: NOT ASSIGNING TO ARM", null, ConstantManager.armDebug);
                     //Needs choices here; goto class that determines the course of action if drivers r not in control!
                 }
             }
         }
+        Vector wristAssign = new Vector(0);
+        for(int systemIndex = 0; systemIndex< ((Vector) Hardware.hardware.elementAt(ConstantManager.pneuType - ConstantManager.minTypes())).size(); systemIndex++){
+            wristAssign.addElement(new Vector(0));
+            for(int memberIndex = 0; memberIndex < ((Vector) ((Vector) Hardware.hardware.elementAt(ConstantManager.pneuType - ConstantManager.minTypes())).elementAt(systemIndex)).size(); memberIndex++){
+                if(!((Boolean) ((Vector) driverInput.inputVals.elementAt(ConstantManager.armType - ConstantManager.minTypes())).elementAt(0)).booleanValue()){
+                    Debug.output("Arm.arm: ASSIGNING TO CLAW", null, ConstantManager.armDebug);
+                    
+                    ((Vector) wristAssign.elementAt(systemIndex)).addElement(((Vector) driverInput.inputVals.elementAt(ConstantManager.armType - ConstantManager.minTypes())).elementAt(3)); //systemIndex + 1?
+                    
+                }
+                else{
+                    Debug.output("Arm.arm: NOT ASSIGNING TO ARM", null, ConstantManager.armDebug);
+                    //Needs choices here; goto class that determines the course of action if drivers r not in control!
+                }
+            }
+        }
+        
         armAssign.addElement(new Integer(ConstantManager.armType));
-        Hardware.assign(armAssign);
+        wristAssign.addElement(new Integer(ConstantManager.pneuType));
+        Vector holder = new Vector(0);
+        holder.addElement(armAssign);
+        holder.addElement(wristAssign);
+        //armAssign.removeAllElements();
+        
+        Hardware.assign(holder);
     }
 }

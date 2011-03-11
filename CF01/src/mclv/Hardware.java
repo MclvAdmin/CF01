@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.can.CANTimeoutException;
 import java.util.*;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Compressor;
 //import edu.wpi.first.wpilibj.RobotDrive;
 //import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
@@ -17,6 +18,7 @@ import edu.wpi.first.wpilibj.Watchdog;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.CANJaguar;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.Relay.Value;
 /**
  *
  * @author god
@@ -64,6 +66,11 @@ public class Hardware {
     public static final int posType = ConstantManager.posType;
     
     private static int typeMatch;
+    public static Compressor comp;
+    public static double globalStart;
+    public static double lastOn;
+   
+    public static boolean compOn = true; //Should the compressor be on as required by the 
     //Sensor vals here
    
     // Make visualization of vectors
@@ -74,18 +81,18 @@ public class Hardware {
             assignment = new Vector(ConstantManager.maxTypes() - ConstantManager.minTypes() + 1); // yup; drivetype is the min value
             assignInit++;
         if(init == 0){
+            comp = new Compressor(9,5); //Compressor(int pressureSwitchChannel, int compressorRelayChannel) OR Compressor(int pressureSwitchSlot, int pressureSwitchChannel, int compresssorRelaySlot, int compressorRelayChannel)
             hardware = new Vector(0);
             hardwareHistoric = new Vector(0);
             hardwareHistoric.addElement(new Integer(init));
+            globalStart = Timer.getFPGATimestamp();
+            lastOn = globalStart;
+            comp.start();
         }
         
         if(mode.equals("fresh")){
-            System.out.println("Hardware.init: printing pertinant constants and initializing");
+            Debug.output("Hardware.init: printing pertinant constants and initializing", null, ConstantManager.hardwareDebug);
             hardware = new Vector(0); //may interact poorly with other threads, lock
-            System.out.println("maxTypes");
-            System.out.println(ConstantManager.maxTypes());
-            System.out.println("minTypes");
-            System.out.println(ConstantManager.minTypes());
             while(hardware.size() < (ConstantManager.maxTypes() - ConstantManager.minTypes() + 1)){
                 hardware.addElement(new Vector(0));
             }
@@ -100,46 +107,50 @@ public class Hardware {
                 }*/
                 while(((Vector) hardware.elementAt(i)).size() < (((Vector) hardwareAssign.elementAt(i)).size() -1)){ // -1 for tag!
                         System.out.println("Hardware.init: expanding harware system element at index:");
-                        System.out.println(i);
+                        Debug.output("Hardware.init: expanding harware system element at index", new Integer(i), ConstantManager.hardwareDebug);
                         ((Vector) hardware.elementAt(i)).addElement(new Vector(0)); // system vector
-                        System.out.println("Hardware.init: to a final size of:");
                     }
-                System.out.println(((Vector) hardwareAssign.elementAt(i)).size());
+                Debug.output("Hardware.init: final hardware size", new Integer(((Vector) hardwareAssign.elementAt(i)).size()), ConstantManager.hardwareDebug);
                 
                 for(int j = 0; j<((Vector) hardwareAssign.elementAt(i)).size() -1; j++){//-1 for last tag value.... Systems of type
 
-                    System.out.println("Hardware.init: hardware assignment elements present: at current index");
-                    System.out.println(((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue());
+                    //System.out.println("Hardware.init: Elements at current index");
+                    Debug.output("Hardware.init: Elements at current index", ((Vector) hardwareAssign.elementAt(i)).elementAt(j), ConstantManager.hardwareDebug);
+                    //System.out.println(((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue());
                     
                     for(int h = 0; h<((Integer) ((Vector) hardwareAssign.elementAt(i)).elementAt(j)).intValue(); h++) //
-                        if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == driveType){
-                            System.out.println("Hardware.init: asking for drive assignment");
+                        if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.driveType){
+                            Debug.output("Hardware.init: asking for drive assignment", null, ConstantManager.hardwareDebug);
                             ((Vector) ((Vector) hardware.elementAt(driveType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.driveType)); //get debug info from DeviceSelect
                         }
-                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == armType){
-                            System.out.println("Init asking for arm assignment");
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.armType){
+                            Debug.output("Hardware.init: asking for arm assignment", null, ConstantManager.hardwareDebug);
                             //((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.armType));
                             ((Vector) ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.armType));
                         }
-                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == victorType){
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.victorType){
                             System.out.println("Init asking for victor assignment");
                             ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.victorType));
                         }
-                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == lineType){
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.pneuType){
+                            System.out.println("Init asking for pneumatics assignment");
+                            ((Vector) ((Vector) hardware.elementAt(ConstantManager.pneuType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.pneuType));
+                        }
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.lineType){
                             System.out.println("Init asking for line sensor assignment");
                             ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.lineType));
                         }
-                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == posType){
+                        else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.posType){
                             System.out.println("Init asking for position sensor assignment");
                             ((Vector) hardware.elementAt(posType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.posType));
                         }
                 }
             }
-                System.out.println("Hardware.init: final report");
-                System.out.println("Hardware.init: run:");
-                System.out.println(init);
-                System.out.println("Hardware.init: mode:");
-                System.out.println(mode);
+                Debug.output("Hardware.init: final report", null, ConstantManager.hardwareDebug);
+                Debug.output("Hardware.init: run", new Integer(init), ConstantManager.hardwareDebug);
+                Debug.output("Hardware.init: mode", mode, ConstantManager.hardwareDebug);
+                Debug.output("Hardware.init: final hardware vector", hardware, ConstantManager.hardwareDebug);
+                /*
                 System.out.println("Hardware.init: hardware types:");
                 System.out.println(hardware.size());
                 System.out.println("Hardware.init: drive systems:");
@@ -148,6 +159,8 @@ public class Hardware {
                 System.out.println(((Vector) ((Vector) hardware.elementAt(0)).elementAt(0)).size());
                 System.out.println("Hardware.init: drive system 2 size:");
                 System.out.println(((Vector) ((Vector) hardware.elementAt(0)).elementAt(1)).size());
+                */
+                
                 hardwareAssign.addElement(new Integer(init));
                 hardwareHistoric = hardwareAssign;
                 hardwareAssign.removeElementAt(hardwareAssign.size() -1);
@@ -196,28 +209,26 @@ public class Hardware {
     }
     public static void assign(Vector hardwareAssign){ //needs safety functionality from monitor (maybe a request goes in first that is either confirmed or denied). Intermediate method? Also, needs driver flag
         if(init == 0){
-            System.out.println("Hardware.assign: run init first. no action taken.");        
+            Debug.output("Hardware.assign: run init first. no action taken.", null, ConstantManager.hardwareDebug);       
         }
         else if(hardwareAssign.lastElement().getClass() == (new Vector(0)).getClass()){ //that should do it!
-            System.out.println("Hardware.assign: recognized multiple type assignment request, sending each individually to assignSingleType");
+            Debug.output("Hardware.assign: recognized multiple type assignment request, sending each individually to assignSingleType", null, ConstantManager.hardwareDebug);
             if(hardware.size() > hardwareAssign.size()){
-                System.out.println("Hardware.assign: NOTE: full assignment set not given"); //create method for assignable types vs. unassignable
+                Debug.output("Hardware.assign: NOTE: full assignment set not given", null, ConstantManager.hardwareDebug);//create method for assignable types vs. unassignable
             }
             for(int hardIndex = 0; hardIndex<Math.min(hardware.size(), hardwareAssign.size()); hardIndex++){
                 if(((Vector) hardwareAssign.elementAt(hardIndex)).lastElement().getClass() == (new Integer(0)).getClass()){
-                    System.out.println("Hardware.assign: sending assignments to assignSingleType for type:");
-                    System.out.println(hardIndex + ConstantManager.minTypes());
-                    Hardware.assignSingleType(hardwareAssign);
+                    Debug.output("Hardware.assign: sending assignments to assignSingleType for type", new Integer(hardIndex + ConstantManager.minTypes()), ConstantManager.hardwareDebug);
+                    Hardware.assignSingleType(((Vector) hardwareAssign.elementAt(hardIndex)));
                 }
                 else{
-                    System.out.println("Hardware.assign: Error: incorrect assignment format; no further action taken on type:");
-                    System.out.println(hardIndex + ConstantManager.minTypes());
+                    Debug.output("Hardware.assign: Error: incorrect assignment format; no further action taken on type:", new Integer(hardIndex + ConstantManager.minTypes()), ConstantManager.hardwareDebug);
                 }
                 
             }
         }
         else if((hardwareAssign.lastElement().getClass() == (new Integer(0)).getClass())){
-            System.out.println("Hardware.assign: recognized single type assignment parameter, sending to assignSingleType");
+            Debug.output("Hardware.assign: recognized single type assignment parameter, sending to assignSingleType", null, ConstantManager.hardwareDebug);
             Hardware.assignSingleType(hardwareAssign);
         }
     }
@@ -536,26 +547,36 @@ public class Hardware {
     private static void decideAssign(int type, int system, int memberId, double output){ //decide which type to cast the jaguar as; pwm or CANJag?
         if(type == ConstantManager.driveType || type == ConstantManager.armType){
             if(ConstantManager.pwm){ //if pwm is true
-                System.out.println("Hardware.decideAssign: assigning values to Pwm");
-                System.out.println(output);
+                Debug.output("Hardware.decideAssign: assigning values to Pwm", new Double(output), ConstantManager.hardwareDebug);
                 ((Pwm) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
             }
             else{ //assign to the proper jag
-                System.out.println("Hardware.decideAssign: assigning values to CANJag");
-                System.out.println(output);
+                Debug.output("Hardware.decideAssign: assigning values to CANJag", new Double(output), ConstantManager.hardwareDebug);
                 ((CANJag) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
             }              
         }
         else if(type == ConstantManager.victorType){
-            System.out.println("Hardware.decideAssign: assigning values to VictorMclv");
-            System.out.println(output);
+            Debug.output("Hardware.decideAssign: assigning values to VictorMclv", new Double(output), ConstantManager.hardwareDebug);
             ((VictorMclv) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(output);
         }
+        else if(type == ConstantManager.pneuType){
+            Debug.output("Hardware.decideAssign: assigning values to SolenoidMclv", new Double(output), ConstantManager.hardwareDebug);
+            if(output == 1){
+               ((SolenoidMclv) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(true);  
+            }
+            else if(output == 0){
+               ((SolenoidMclv) ((Vector) ((Vector) ((Vector) hardware.elementAt(type - ConstantManager.minTypes())).elementAt(system)).elementAt(memberId)).elementAt(0)).assign(false); 
+            }
+            else{
+                Debug.output("Hardware.decideAssign: invalid value to SolenoidMclv", new Double(output), 3);
+            }
+            
+        }
         else if(type == ConstantManager.lineType){
-            System.out.println("Hardware.decideAssign: cannot assign to lineType");
+            Debug.output("Hardware.decideAssign: cannot assign to lineType", null, ConstantManager.hardwareDebug);
         }
         else if(type == ConstantManager.posType){
-            System.out.println("Hardware.decideAssign: cannot assign to posType");
+            Debug.output("Hardware.decideAssign: cannot assign to posType", null, ConstantManager.hardwareDebug);
         } 
         
         

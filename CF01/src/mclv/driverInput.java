@@ -39,6 +39,7 @@ public class driverInput {
     public static double clawInterval;
     public static boolean clawQuickTo0;
     public static boolean clawQuickTo2; 
+    public static boolean lastArm = false;
     
     
     public static void init(Vector controllerConfig){ //make static asap
@@ -72,20 +73,21 @@ public class driverInput {
         }
         inputVals = new Vector(0);
         for(int typeIndex = 0; typeIndex + ConstantManager.minTypes()-1 != usedTypesMaxType; typeIndex++){
-            System.out.println("driverInput.update: typeIndex");
-            System.out.println(typeIndex);
+            //System.out.println("driverInput.update: typeIndex");
+            //System.out.println(typeIndex);
             if(typeIndex + 1 == ConstantManager.driveType){
                 inputVals.addElement(drive()); //Include special input changes in specific component methods
             }
             else if(typeIndex + 1 == ConstantManager.armType){
-                System.out.println("driverInput.update: placing arm vector at index");
-                System.out.println(typeIndex + 1);
+                //System.out.println("driverInput.update: placing arm vector at index");
+                //System.out.println(typeIndex + 1);
                 inputVals.addElement(arm());
             }
             else{
                 inputVals.addElement(null);    
             }
         }
+        Debug.output("driverInput.update: assignment vector", inputVals, ConstantManager.inputDebug);
         
         
     }
@@ -148,15 +150,26 @@ public class driverInput {
         
             if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawMinusButton)){
                 //armVals.addElement(new Double(ConstantManager.clawManualSpeed)); 
-                armVals.addElement(new Double(clawManualSequence(0)));
+                //armVals.addElement(new Double(clawManualSequence(0)));
+                armVals.addElement(new Double(1));
+                lastArm = true;
             }
             else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawMinusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawPlusButton)){
                 //armVals.addElement(new Double(-ConstantManager.clawManualSpeed));
-                armVals.addElement(new Double(clawManualSequence(1)));
+                //armVals.addElement(new Double(clawManualSequence(1)));
+                armVals.addElement(new Double(0));
+                lastArm = false;
             }
             else{
+                if(lastArm){
+                    armVals.addElement(new Double(1));    
+                }
+                else{
+                    armVals.addElement(new Double(0));    
+                }
+                
                 //armVals.addElement(new Double(0));
-                armVals.addElement(new Double(clawManualSequence(2)));
+                //armVals.addElement(new Double(clawManualSequence(2)));
             }
         }
         else{

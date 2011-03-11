@@ -6,6 +6,9 @@
 package mclv.device;
 import edu.wpi.first.wpilibj.CANJaguar;
 import edu.wpi.first.wpilibj.can.CANTimeoutException;
+import edu.wpi.first.wpilibj.Timer;
+import mclv.Hardware;
+import mclv.utils.ConstantManager;
 import java.util.*;
 /**
  *
@@ -15,19 +18,27 @@ public class CANJag { //This wraps info for monitor into the actual jag object i
     private static Vector jaguar;
     private static final int CAN_BUS_MIN = 1;
     private static int canBus = CAN_BUS_MIN; //use index value to identify jag
+    public static int unusedBus = 99;
     public int instanceBus; //public for debugging purposes
+    public double lastSentVal;
+    public double lastActualVal;
     public CANJaguar jagInstance; //public for monitor class
     
     public CANJag(int bus){
         instanceBus = bus;
-        try{
-            jagInstance = new CANJaguar(bus);
-            System.out.println("CANJag constructor: created CANJaguar on bus");
-            System.out.println(bus);
+        if(bus == unusedBus){
+            //put out message here
         }
-        catch(CANTimeoutException canFail){
-            System.out.println("CAN Timeout while assigning ID:");
-            System.out.println(bus);
+        else{
+            try{
+                jagInstance = new CANJaguar(bus);
+                System.out.println("CANJag constructor: created CANJaguar on bus");
+                System.out.println(bus);
+            }
+            catch(CANTimeoutException canFail){
+                System.out.println("CAN Timeout while assigning ID:");
+                System.out.println(bus);
+            }
         }
         
     }
@@ -50,11 +61,28 @@ public class CANJag { //This wraps info for monitor into the actual jag object i
         try{
             System.out.println("CANJag.assign: assigning ouput value to CANJaguar device");
             System.out.println(output);
+            lastSentVal = output;
+            lastActualVal = jagInstance.getX();
             jagInstance.setX(output);
         }
         catch(CANTimeoutException canFail){
             System.out.println("CAN Timeout while assigning drive value:");
             System.out.println(output);
         }
+        double timeInterval = Timer.getFPGATimestamp() - Hardware.lastOn;
+            if(timeInterval >= ConstantManager.compDelay){
+                if(Hardware.compOn){
+                    if(output >= ConstantManager.compCutoff){
+                       Hardware.comp.stop(); 
+                       Hardware.compOn = false;
+                    }
+                }
+                else{
+                    if(output < ConstantManager.compCutoff){
+                        Hardware.comp.start();
+                        Hardware.compOn = false;
+                    }
+                }
+            }
     }
 }

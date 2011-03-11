@@ -14,8 +14,9 @@ public class ConstantManager {
     public static int driveType = 1;
     public static int armType = 2;
     public static int victorType = 3;
-    public static int lineType = 4;
-    public static int posType = 5;
+    public static int pneuType = 4;
+    public static int lineType = 5;
+    public static int posType = 6;
     
     public static int driveJagFreq = 1;
     public static int armJagFreq = 1;
@@ -23,6 +24,8 @@ public class ConstantManager {
     public static int lineFreq = 1;
     public static int posFreq = 1;
     public static boolean pwm = true; //testing this value
+    public static double compCutoff = 0.3;
+    public static double compDelay = 0.05; //This is the amount of time after last assigned value that the compressor will wait (so we don't have compressors switching on/off)
     
     public static double straight = 0.5;
     public static double hardTurn = 0.5;
@@ -68,6 +71,15 @@ public class ConstantManager {
     
     public static boolean armSequenceEnabled = false;
     
+    public static boolean debug = true;
+    public static int debugVerbose = 2; //verbosity from 0-3, 0 is none 3 is most. Higher verb rating for messages represents higher priority
+    public static int deviceDebug = 1;
+    public static int compDebug = 3;
+    public static int driveDebug = 2;
+    public static int armDebug = 2;
+    public static int hardwareDebug = 2;
+    public static int inputDebug = 1;
+    
     
     private static Vector typeList;
     private static int calc;
@@ -79,6 +91,7 @@ public class ConstantManager {
             typeList.addElement(new Integer(driveType));
             typeList.addElement(new Integer(armType));
             typeList.addElement(new Integer(victorType));
+            typeList.addElement(new Integer(pneuType));
             typeList.addElement(new Integer(lineType));
             typeList.addElement(new Integer(posType));
             
@@ -97,6 +110,7 @@ public class ConstantManager {
             typeList.addElement(new Integer(driveType));
             typeList.addElement(new Integer(armType));
             typeList.addElement(new Integer(victorType));
+            typeList.addElement(new Integer(pneuType));
             typeList.addElement(new Integer(lineType));
             typeList.addElement(new Integer(posType));
             

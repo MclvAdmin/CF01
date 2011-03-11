@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project-private xmlns="http://www.netbeans.org/ns/project-private/1">
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1"/>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/logomotion/Drive.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/edu/wpi/first/wpilibj/defaultCode/DefaultRobot.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/utils/DeviceSelect.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/device/CANJag.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/device/Pwm.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/Hardware.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/utils/ConstantManager.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/driverInput.java</file>
+        <file>file:/K:/Robotics/Code/subversion/CF01/src/mclv/utils/MathMclv.java</file>
+    </open-files>
 </project-private>

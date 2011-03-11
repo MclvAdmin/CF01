@@ -30,8 +30,7 @@ public class Drive { //Consider static methods
     public static Vector request(Vector positionReq, Vector controllerDrive){ //Makes 'driveAssign' for hardware object ..... positionReq includes data as to automation of drive from sensor class
         driveSet = new Vector(0);
         driveOut = new Vector(0);
-        System.out.println("Drive.request: first element from driver input");
-        System.out.println((((Boolean) controllerDrive.elementAt(0)).booleanValue()));
+        Debug.output("Drive.request: first element from driver input", controllerDrive.elementAt(0), ConstantManager.driveDebug);
         if(((((Integer) positionReq.lastElement()).intValue())==0) && ((((Boolean) controllerDrive.elementAt(0)).booleanValue()) != true)){
             /*THAT looks fucking complicated but it's the first value of the last element in the provided request from the 
              * position object which tells drive whether it's taking driver input.
@@ -46,8 +45,7 @@ public class Drive { //Consider static methods
                 }
             }*/
         for(int i = 0; i<positionReq.size() -1; i++){
-            System.out.println("Drive.request: posReq index value:");
-            System.out.println(i);
+            Debug.output("Drive.request: posReq index value", new Integer(i), ConstantManager.driveDebug);
                     
             for(int c = 0; driveOut.size()< positionReq.size() -1; c++){
                 driveOut.addElement(new Vector(0));
@@ -64,9 +62,7 @@ public class Drive { //Consider static methods
             }
         }
         driveOut.addElement(new Integer(ConstantManager.driveType));
-        System.out.println("Drive.request: REPORT:");
-        System.out.println("Drive.request: Assignment size:");
-        System.out.println(driveOut.size() -1);
+        Debug.output("Drive.request: Final Vector", driveOut, ConstantManager.driveDebug);
         return driveOut; //Send to hardware
     }
     
