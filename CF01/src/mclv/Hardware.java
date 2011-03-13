@@ -69,6 +69,10 @@ public class Hardware {
     public static Compressor comp;
     public static double globalStart;
     public static double lastOn;
+    
+    public static DigitalInput lineLeft;
+    public static DigitalInput lineMid;
+    public static DigitalInput lineRight;
    
     public static boolean compOn = true; //Should the compressor be on as required by the 
     //Sensor vals here
@@ -81,13 +85,16 @@ public class Hardware {
             assignment = new Vector(ConstantManager.maxTypes() - ConstantManager.minTypes() + 1); // yup; drivetype is the min value
             assignInit++;
         if(init == 0){
-            comp = new Compressor(9,5); //Compressor(int pressureSwitchChannel, int compressorRelayChannel) OR Compressor(int pressureSwitchSlot, int pressureSwitchChannel, int compresssorRelaySlot, int compressorRelayChannel)
+            comp = new Compressor(9,1); //Compressor(int pressureSwitchChannel, int compressorRelayChannel) OR Compressor(int pressureSwitchSlot, int pressureSwitchChannel, int compresssorRelaySlot, int compressorRelayChannel)
             hardware = new Vector(0);
             hardwareHistoric = new Vector(0);
             hardwareHistoric.addElement(new Integer(init));
             globalStart = Timer.getFPGATimestamp();
             lastOn = globalStart;
             comp.start();
+            lineLeft = new DigitalInput(1);
+            lineMid = new DigitalInput(2);
+            lineRight = new DigitalInput(3);
         }
         
         if(mode.equals("fresh")){
@@ -106,7 +113,7 @@ public class Hardware {
                 System.out.println(hardwareAssign.size() -1);
                 }*/
                 while(((Vector) hardware.elementAt(i)).size() < (((Vector) hardwareAssign.elementAt(i)).size() -1)){ // -1 for tag!
-                        System.out.println("Hardware.init: expanding harware system element at index:");
+                        //System.out.println("Hardware.init: expanding harware system element at index:");
                         Debug.output("Hardware.init: expanding harware system element at index", new Integer(i), ConstantManager.hardwareDebug);
                         ((Vector) hardware.elementAt(i)).addElement(new Vector(0)); // system vector
                     }
@@ -129,15 +136,15 @@ public class Hardware {
                             ((Vector) ((Vector) hardware.elementAt(armType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.armType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.victorType){
-                            System.out.println("Init asking for victor assignment");
+                            //System.out.println("Init asking for victor assignment");
                             ((Vector) hardware.elementAt(victorType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.victorType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.pneuType){
-                            System.out.println("Init asking for pneumatics assignment");
+                            Debug.output("Hardware.Init asking for pneumatics assignment", null, ConstantManager.hardwareDebug);
                             ((Vector) ((Vector) hardware.elementAt(ConstantManager.pneuType -ConstantManager.minTypes())).elementAt(j)).addElement(DeviceSelect.selectInit(ConstantManager.pneuType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.lineType){
-                            System.out.println("Init asking for line sensor assignment");
+                            Debug.output("Hardware.Init asking for line assignment", null, ConstantManager.hardwareDebug);
                             ((Vector) hardware.elementAt(lineType -ConstantManager.minTypes())).addElement(DeviceSelect.selectInit(ConstantManager.lineType));
                         }
                         else if(((Integer) ((Vector) hardwareAssign.elementAt(i)).lastElement()).intValue() == ConstantManager.posType){

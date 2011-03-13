@@ -16,7 +16,6 @@ public class DigIn {
     private static final int DIG_PIN_MIN = 1;
     private static int digPin = DIG_PIN_MIN; //use index value to identify jag
     public static Vector init(){ // boolean reinit represents whether this is the first time you're re-initializing
-        
         digitalDevice = new Vector(0);
         digitalDevice.addElement(new DigitalInput(digPin));
         digitalDevice.addElement(new Vector(0)); //This is for data storage

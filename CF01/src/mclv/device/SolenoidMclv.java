@@ -19,15 +19,17 @@ private static final int SOL_BUS_MIN = 1;
 private static int solBus = SOL_BUS_MIN; //use index value to identify jag
 public static int unusedBus = 99;
 public Vector instanceBus; //public for debugging purposes
-public boolean lastVal;
+public boolean lastVal = true;
 public boolean lastActualVal;
     
     public SolenoidMclv(int bus){
        if(!(bus == unusedBus)){
+       //DoubleSolenoid.
        solenoidInstance = new DoubleSolenoid(bus, bus+1); //int forwardchannel, int reverse
        instanceBus = new Vector(0);
        instanceBus.addElement(new Integer(bus));
        instanceBus.addElement(new Integer(bus + 1));
+       //solenoidInstance.set(DoubleSolenoid.Value.kReverse);
        Debug.output("SolenoidMclv constructor: created DoubleSolenoid on buses", instanceBus, ConstantManager.deviceDebug);
        }
        else{

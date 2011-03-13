@@ -24,13 +24,23 @@ public class ConstantManager {
     public static int lineFreq = 1;
     public static int posFreq = 1;
     public static boolean pwm = true; //testing this value
-    public static double compCutoff = 0.3;
-    public static double compDelay = 0.05; //This is the amount of time after last assigned value that the compressor will wait (so we don't have compressors switching on/off)
+    public static double compCutoff = 0.5;
+    public static double compDelay = .35; //This is the amount of time after last assigned value that the compressor will wait (so we don't have compressors switching on/off)
     
-    public static double straight = 0.5;
-    public static double hardTurn = 0.5;
-    public static double slightTurn = 0.25;
+    public static double straightConfig = 0.5;
+    public static double hardTurnConfig = 0.5;
+    public static double slightTurnConfig = 0.25;
+    public static double lineStraightCoeff = 0.4;
+    public static double lineTurnCoeff = 0.4;
+    public static double straight = straightConfig*lineStraightCoeff;
+    public static double hardTurn = hardTurnConfig*lineTurnCoeff;
+    public static double slightTurn = slightTurnConfig*lineTurnCoeff;
+    public static int atEndHistCount = 9;
+    public static int atEndAssumedNoise = 1;
+    public static int atEndDepth = atEndHistCount + atEndAssumedNoise;
     public static double failedJagAssign = 0;
+    
+    public static double autoDrivePause = 0.75;
     
     public static double jointCoeff = 0.1;
     public static double wristCoeff = 0.1;
@@ -46,24 +56,48 @@ public class ConstantManager {
     public static double joyMixMargin = 2.5;
     public static double joyMixNullRange = 1;
     public static boolean armInverted = false;
+    public static double driveSlowCoeff = 0.25;
+    public static double driveQuickRelease = 0.25;
+    public static boolean coDriveOverride = true;
     
     public static double mainIntervalLength = 0.3;
     public static double mainSpeed = 0.4;
-    public static double mainManualSpeed = 1;
+    public static double mainDownSpeed = 0.4;
+    public static double mainUpSpeed = 0.4;
+    public static double mainManualSpeed = .25;
+    public static int mainAxis = 2;
+    public static double mainDownCoeff = 0.35;
+    public static double mainUpCoeff = 0.4;
+    public static double mainSimulDown = -.45;
+    public static double mainSimulUp = .35;
     public static int mainPlusButton = 1;
     public static int mainMinusButton = 2;
     public static boolean mainSeqInv = false;
+    public static boolean mainMasterInv = false;
+    public static double mainQuickRelease = -0.3;
     
     public static double wristIntervalLength = 0.1;
     public static double wristSpeed = 0.07;
-    public static double wristManualSpeedDown = .05;
-    public static double wristManualSpeedUp = 1;
+    public static double wristDownSpeed = 0.25;
+    public static double wristUpSpeed = 0.25;
+    public static double wristManualSpeedDown = .3; //NOT USED
+    public static double wristManualSpeedUp = .3; //NOT USED
+    public static double wristSimulDown = -.3;
+    public static double wristSimulUp = .3;
+    public static int wristAxis = 4;
+    public static double wristDownCoeff = 0.3;
+    public static double wristUpCoeff = 0.4; //For driver control
     public static int wristPlusButton = 4;
     public static int wristMinusButton = 3;
     public static boolean wristSeqInv = false;
+    public static boolean wristMasterInv = false;
+    public static double wristQuickRelease = -0.2;
+    
+    public static int sequencePlusButton = 4;
+    public static int sequenceMinusButton = 3;
     
     public static double clawIntervalLength = 3;
-    public static double clawSpeed = .75;
+    public static double clawSpeed = .3;
     public static double clawManualSpeed = 1;
     public static int clawPlusButton = 6;
     public static int clawMinusButton = 5;
@@ -71,14 +105,21 @@ public class ConstantManager {
     
     public static boolean armSequenceEnabled = false;
     
-    public static boolean debug = true;
-    public static int debugVerbose = 2; //verbosity from 0-3, 0 is none 3 is most. Higher verb rating for messages represents higher priority
+    public static boolean depInverted = false;
+    public static double depOut = .7;
+    public static double depIn = .7;
+    
+    public static boolean debug = false;
+    public static int debugVerbose = 1; //verbosity from 0-3, 0 is most, 3 is least, 4 is none. Higher verb rating for messages represents higher priority
     public static int deviceDebug = 1;
-    public static int compDebug = 3;
+    public static int compDebug = 2;
     public static int driveDebug = 2;
     public static int armDebug = 2;
     public static int hardwareDebug = 2;
     public static int inputDebug = 1;
+    public static int mainDebug = 2;
+    public static int lineDebug = 3;
+    public static int autoDebug = 3;
     
     
     private static Vector typeList;

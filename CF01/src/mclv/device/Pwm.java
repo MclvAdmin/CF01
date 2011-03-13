@@ -44,7 +44,7 @@ public class Pwm { //This wraps info for monitor into the actual jag object init
         pwmDevice.addElement(new Pwm(pwmBus));
         Debug.output("Pwm.init: creating new data storage vector", null, ConstantManager.deviceDebug);
         pwmDevice.addElement(new Vector(0)); //This is for data storage
-        System.out.println("Pwm.init: creating new integer ID");
+        //System.out.println("Pwm.init: creating new integer ID");
         Debug.output("Pwm.init: creating new integer ID", new Integer(pwmBus - 1), ConstantManager.deviceDebug);
         pwmDevice.addElement(new Integer(pwmBus -1)); //this is the ID number
         pwmBus++;
@@ -55,23 +55,23 @@ public class Pwm { //This wraps info for monitor into the actual jag object init
             pwmBus = PWM_BUS_MIN;
     }
     public void assign(double output){
-            Debug.output("Pwm.assign: assigning ouput value to PWM device", new Double(output), 0);
+            Debug.output("Pwm.assign: assigning ouput value to PWM device", new Double(output), ConstantManager.deviceDebug);
             double timeInterval = Timer.getFPGATimestamp() - Hardware.lastOn;
-            Debug.output("Pwm.assign: time interval", new Double(timeInterval), 3);
+            Debug.output("Pwm.assign: time interval", new Double(timeInterval), ConstantManager.deviceDebug);
             lastSentVal = output;
             lastActualVal = pwmInstance.get();
             pwmInstance.set(output);
             if(timeInterval >= ConstantManager.compDelay){
                 if(!Hardware.compOn){
                     if(Math.abs(output) < ConstantManager.compCutoff){
-                       Debug.output("Pwm.assign: stopping compressor at time", new Double(Timer.getFPGATimestamp()), 3);
+                       Debug.output("Pwm.assign: stopping compressor at time", new Double(Timer.getFPGATimestamp()), ConstantManager.deviceDebug);
                        Hardware.comp.start();
                        Hardware.compOn = true;
                     }
                 }
                 else{
                     if(Math.abs(output) >= ConstantManager.compCutoff){
-                        Debug.output("Pwm.assign: starting compressor at time", new Double(Timer.getFPGATimestamp()), 3);
+                        Debug.output("Pwm.assign: starting compressor at time", new Double(Timer.getFPGATimestamp()), ConstantManager.deviceDebug);
                         Hardware.comp.stop();
                         Hardware.compOn = false;
                         Hardware.lastOn = Timer.getFPGATimestamp();

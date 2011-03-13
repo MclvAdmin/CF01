@@ -4,10 +4,13 @@
  */
 
 package mclv;
+import edu.wpi.first.wpilibj.GenericHID.Hand;
 import mclv.utils.*;
+import mclv.logomotion.*;
 import java.util.*;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.DriverStation;
 /**
  *
  * @author god
@@ -18,12 +21,13 @@ import edu.wpi.first.wpilibj.Timer;
 public class driverInput {
     private static Vector controllers;
     public static int init =0;
+    public static int armInit =0;
     private static int nextPort = 1; //The port min initially... Research Cypress module for other input devices
     private static Vector driveVals;
     private static Vector armVals;
     private static Integer testInt;
     public static Vector inputVals;
-    public static int usedTypesMaxType = Math.max(ConstantManager.driveType,ConstantManager.armType);
+    public static int usedTypesMaxType = ConstantManager.pneuType;
     public static double mainStart;
     public static int mainSt;
     public static double mainInterval;
@@ -39,7 +43,10 @@ public class driverInput {
     public static double clawInterval;
     public static boolean clawQuickTo0;
     public static boolean clawQuickTo2; 
-    public static boolean lastArm = false;
+    public static boolean lastArm = true;
+    public static double lastOutput;
+    public static MotorSequence mainSequence;
+    public static MotorSequence wristSequence;
     
     
     public static void init(Vector controllerConfig){ //make static asap
@@ -81,7 +88,18 @@ public class driverInput {
             else if(typeIndex + 1 == ConstantManager.armType){
                 //System.out.println("driverInput.update: placing arm vector at index");
                 //System.out.println(typeIndex + 1);
-                inputVals.addElement(arm());
+                Vector armValues = new Vector(0);
+                armValues = arm();
+                armValues.removeElementAt(armValues.size() - 1);
+                inputVals.addElement(armValues);
+            }/*
+            else if(typeIndex + 1 == ConstantManager.victorType){
+                inputVals.addElement(new Vector(0));
+            }*/
+            else if(typeIndex + 1 == ConstantManager.pneuType){
+                Vector pneuVals = new Vector(0);
+                pneuVals.addElement(arm().lastElement());
+                inputVals.addElement(pneuVals); 
             }
             else{
                 inputVals.addElement(null);    
@@ -94,13 +112,19 @@ public class driverInput {
 
     public static Vector drive(){ //Reconfig to run from single driverInput call
         driveVals = new Vector(0);
-        driveVals.addElement(new Boolean(false)); //Expand for more values! FALSE 
+        if(DriverStation.getInstance().isAutonomous() && DriverStation.getInstance().isEnabled()){
+            driveVals.addElement(new Boolean(true));
+        }
+        else if (DriverStation.getInstance().isOperatorControl() && DriverStation.getInstance().isEnabled()){
+            driveVals.addElement(new Boolean(false));
+        }
+        
+        //driveVals.addElement(new Boolean(false)); //Expand for more values! FALSE 
         if(ConstantManager.joyMix && (100*Math.abs(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(0)).getY() - ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(1)).getY()) < ConstantManager.joyMixMargin) &! ((Math.abs(100*((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(0)).getY()) < ConstantManager.joyMixNullRange) || (Math.abs(100*((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(1)).getY()) < ConstantManager.joyMixNullRange))){
             double mixedValue = 0.5*Math.abs(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(0)).getY() + ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(1)).getY());
             if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(0)).getY() + ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(1)).getY() < 0){
             mixedValue = -mixedValue;
             }
-            
             driveVals.addElement(new Double(driveChoose(mixedValue)));
             driveVals.addElement(new Double(driveChoose(mixedValue)));
         }
@@ -126,8 +150,24 @@ public class driverInput {
     
     public static Vector arm(){
         armVals = new Vector(0);
-        armVals.addElement(new Boolean(false)); //Expand for more values! FALSE 
+        if(armInit == 0){
+            mainSequence = new MotorSequence(ConstantManager.mainIntervalLength, ConstantManager.mainDownSpeed, ConstantManager.mainUpSpeed);
+            wristSequence = new MotorSequence(ConstantManager.wristIntervalLength, ConstantManager.wristDownSpeed, ConstantManager.wristUpSpeed);
+        }
+        if(DriverStation.getInstance().isAutonomous() && DriverStation.getInstance().isEnabled()){
+            armVals.addElement(new Boolean(true));
+        }
+        else if (DriverStation.getInstance().isOperatorControl() && DriverStation.getInstance().isEnabled()){
+            armVals.addElement(new Boolean(false));
+        }
+        
+        //armVals.addElement(new Boolean(false)); //Expand for more values! FALSE 
         if(!ConstantManager.armSequenceEnabled){
+            double mainVal = -((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getY();
+            double wristVal = ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawAxis(4);
+            double depVal =  ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawAxis(6);
+            
+            /*
             if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainMinusButton)){
                 armVals.addElement(new Double(ConstantManager.mainManualSpeed));   
             }
@@ -136,8 +176,83 @@ public class driverInput {
             }
             else{
                 armVals.addElement(new Double(0));
+            }*/
+            //double mainSequenceVal = motorSequence(armButtons("main"), ConstantManager.mainIntervalLength, ConstantManager.mainDownSpeed, ConstantManager.mainDownSpeed);
+            //double wristSequenceVal = motorSequence(armButtons("wrist"), ConstantManager.wristIntervalLength, ConstantManager.wristDownSpeed, ConstantManager.wristDownSpeed);
+            double mainSequenceVal = mainSequence.motorOut(armButtons("main"));
+            double wristSequenceVal = wristSequence.motorOut(armButtons("wrist"));
+            
+            if(mainSequenceVal != 0){
+                mainVal = mainSequenceVal;
             }
-        
+            else{
+                if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(1) && wristSequenceVal == 0){
+                    mainVal = ConstantManager.mainSimulUp;
+                }
+                else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(2) && wristSequenceVal == 0){
+                    mainVal = ConstantManager.mainSimulDown;
+                }
+                else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(8) && wristSequenceVal == 0){
+                    mainVal = ConstantManager.mainQuickRelease;
+                }
+                else{
+                    if(mainVal >= 0){
+                        mainVal = mainVal*ConstantManager.mainUpCoeff;
+                    }
+                    else{
+                        mainVal = mainVal*ConstantManager.mainDownCoeff;
+                    }
+                }
+            }
+            
+            if(wristSequenceVal != 0){
+                wristVal = wristSequenceVal;
+            }
+            else{
+               if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(1) && mainSequenceVal == 0){
+                    wristVal = ConstantManager.wristSimulUp;
+                }
+                else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(2) && mainSequenceVal == 0){
+                    wristVal = ConstantManager.wristSimulDown;
+                }
+                else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(8) && mainSequenceVal == 0){
+                    wristVal = ConstantManager.wristQuickRelease;
+                }
+                else{
+                    if(wristVal >= 0){
+                        wristVal = wristVal*ConstantManager.wristDownCoeff;
+                    }
+                    else{
+                        wristVal = wristVal*ConstantManager.wristUpCoeff;
+                    }
+                } 
+            }
+            
+            if(ConstantManager.mainMasterInv){
+                mainVal = -mainVal;
+            }
+            if(ConstantManager.wristMasterInv){
+                wristVal = -wristVal;
+            }
+            
+            if(ConstantManager.depInverted){
+                depVal = -depVal;
+            }
+            
+            if(depVal >0){
+                depVal = ConstantManager.depOut;
+            }
+            else if(depVal <0){
+                depVal = -ConstantManager.depIn;
+            }
+            else{
+                depVal = 0;
+            }
+            
+            armVals.addElement(new Double(mainVal));
+            armVals.addElement(new Double(wristVal));
+            armVals.addElement(new Double(depVal));
+            /*
             if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristMinusButton)){
                 armVals.addElement(new Double(ConstantManager.wristManualSpeedDown));   
             }
@@ -146,8 +261,10 @@ public class driverInput {
             }
             else{
                 armVals.addElement(new Double(0));
-            }
-        
+            }*/
+            
+            //armVals.addElement(new Double(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawAxis(ConstantManager.wristAxis)));
+            
             if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.clawMinusButton)){
                 //armVals.addElement(new Double(ConstantManager.clawManualSpeed)); 
                 //armVals.addElement(new Double(clawManualSequence(0)));
@@ -173,9 +290,10 @@ public class driverInput {
             }
         }
         else{
-            armVals.addElement(new Double(mainSequence(armButtons("main"))));
-            armVals.addElement(new Double(wristSequence(armButtons("wrist"))));
-            armVals.addElement(new Double(clawSequence(armButtons("claw"))));
+            //armVals.addElement(new Double(mainSequence(armButtons("main"))));
+            //armVals.addElement(new Double(wristSequence(armButtons("wrist"))));
+            //armVals.addElement(new Double(clawSequence(armButtons("claw"))));
+            
         }
         
         /*armVals.addElement(armChoose("main"));
@@ -187,10 +305,10 @@ public class driverInput {
     public static int armButtons(String joint){
         int directionReq = 3; //ensures you know if value has been changed at all
         if(joint.equals("main")){
-            if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainMinusButton)){
+            if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequencePlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequenceMinusButton)){
                 directionReq = 0;
             }
-            else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainMinusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.mainPlusButton)){
+            else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequenceMinusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequencePlusButton)){
                 directionReq = 1;
             }
             else{
@@ -198,10 +316,10 @@ public class driverInput {
             }
         }
         else if(joint.equals("wrist")){
-            if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristPlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristMinusButton)){
+            if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequencePlusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequenceMinusButton)){
                 directionReq = 0;
             }
-            else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristMinusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.wristPlusButton)){
+            else if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequenceMinusButton) &! ((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(ConstantManager.sequencePlusButton)){
                 directionReq = 1;
             }
             else{
@@ -219,8 +337,8 @@ public class driverInput {
                 directionReq = 2;
             }
         }
-        System.out.println("driverInput.armButtons: sequence variable state");
-        System.out.println(directionReq);
+        Debug.output("driverInput.armButtons: sequence variable state", new Integer(directionReq), ConstantManager.inputDebug);
+        //System.out.println(directionReq);
         return directionReq;
     }
     public static double mainSequence(int directionReq){ //+ is 0, - is 1, no further action is 2;
@@ -331,8 +449,8 @@ public class driverInput {
         return output;
         
     }
-    public static double wristSequence(int directionReq){ //+ is 0, - is 1, no further action is 2;
-        System.out.println("driverInput.wristSequence: START");
+    public static double motorSequence(int directionReq, double interval, double downSpeed, double upSpeed){ //+ is 0, - is 1, no further action is 2;
+        Debug.output("driverInput.motorSequence: Start. Current state", new Integer(wristSt), ConstantManager.inputDebug);
         double output = 0;
         double timeElapsed = Timer.getFPGATimestamp() - wristStart;
         if(wristSt == 0 ){ //0 is idle, 1 is moving +, 2 is sequence complete, 3 is moving - (back to 0)
@@ -342,88 +460,96 @@ public class driverInput {
             if(directionReq == 0){
                 wristSt = 1;
                 wristStart = Timer.getFPGATimestamp();
-                wristInterval = ConstantManager.wristIntervalLength;
+                wristInterval = interval;
+                output = upSpeed;
             }
             else if(directionReq == 1){
-                System.out.println("driverInput.wristSequence: cannot start sequence, already in rest position");
-                
+                //System.out.println("driverInput.wristSequence: cannot start sequence, already in rest position");
+                Debug.output("driverInput.motorSequence: cannot start sequence, already in rest position", null, ConstantManager.inputDebug);
+                output = 0;
             }
             else{ //dir ==2
-                System.out.println("driverInput.wristSequence: taking no further action");
-                
+                //System.out.println("driverInput.wristSequence: taking no further action");
+                Debug.output("driverInput.motorSequence: taking no further action", null, ConstantManager.inputDebug);
+                output = 0;
             }
-            output = 0;
+            
         }
         else if(wristSt == 1){ //moving to 2 (+)
             if(directionReq == 0){ //(continue moving +)
-                
+                output = lastOutput;
             }
             else if(directionReq == 1){ //quick reverse during movement
                 wristSt = 3;
                 if(!wristQuickTo2){
-                    wristInterval = ConstantManager.wristIntervalLength - timeElapsed;
+                    wristInterval = interval - timeElapsed;
                     wristStart = Timer.getFPGATimestamp();
                 }
                 else{
                     wristQuickTo2 = false;
-                    wristInterval = ConstantManager.wristIntervalLength  - wristInterval + timeElapsed;
+                    wristInterval = interval  - wristInterval + timeElapsed;
                     wristStart = Timer.getFPGATimestamp();
                 }
                 wristQuickTo0 = true;
+                wristSt = 3;
+                output = -downSpeed;
             }
             
-            if(timeElapsed >= wristInterval){
+            if(timeElapsed >= wristInterval && wristSt == 1){
                wristSt = 2;
                output = 0;
                wristStart = Timer.getFPGATimestamp();
                
             }
             else{
-               output = ConstantManager.wristSpeed; 
+               output = upSpeed; 
             }
         }
         else if(wristSt == 2){
             wristQuickTo2 = false;
             wristQuickTo0 = false;
             if(directionReq == 0){ //No action, already there
-                
+                output = 0;
             }
             else if(directionReq == 1){
                 wristSt = 3;
                 wristStart = Timer.getFPGATimestamp();
-                wristInterval = ConstantManager.wristIntervalLength;
+                wristInterval = interval;
                 wristQuickTo0 = false;
+                output = -downSpeed;
             }
             else{ // =3, no input (remain stopped)
-                
+                output = 0; 
             }
-            output = 0;
         }
         else if(wristSt == 3){
             if(directionReq == 0){ //quick reverse during movement to 0
                 wristSt = 1;
                 if(!wristQuickTo0){
-                    wristInterval = ConstantManager.wristIntervalLength - timeElapsed;
+                    wristInterval = interval - timeElapsed;
                     wristStart = Timer.getFPGATimestamp();
                 }
                 else{
                     wristStart = Timer.getFPGATimestamp();
-                    wristInterval = ConstantManager.wristIntervalLength  - wristInterval + timeElapsed;
+                    wristInterval = interval  - wristInterval + timeElapsed;
                     wristQuickTo0 = false;
                 }
+               wristSt = 1;
                wristQuickTo2 = true;
+               output = upSpeed;
             }
             else if(directionReq == 1){
                 //continue in same direction
+                output = lastOutput;
             }
             
-            if(timeElapsed >= wristInterval){
+            if(timeElapsed >= wristInterval && wristSt == 3){
                 wristSt = 0;
                 output = 0;
                 wristStart = Timer.getFPGATimestamp();
             }
             else{
-                output = -ConstantManager.wristSpeed;
+                output = -downSpeed;
             }
             
         }
@@ -432,6 +558,7 @@ public class driverInput {
            output = -output; 
         }
         
+        lastOutput = output;
         return output;
         
     }
@@ -642,7 +769,13 @@ public class driverInput {
             output = -1;
         }
         
+        if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(0)).getTrigger()){
+            output = 1;
+        }
         
+        if(((Joystick) ((Vector) controllers.elementAt(ConstantManager.joyIndex)).elementAt(2)).getRawButton(8) && ConstantManager.coDriveOverride){
+            output = ConstantManager.driveQuickRelease;
+        }
         
         if(ConstantManager.joyInverted && output != 0){ //must come last (squarin' will occur)
             output = -output;
